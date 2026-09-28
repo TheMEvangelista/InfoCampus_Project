@@ -10,11 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ArtigosRouteImport } from './routes/artigos'
+import { Route as ComunidadesRouteImport } from './routes/comunidades'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as CriarArtigoRouteImport } from './routes/criar-artigo'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as EventosRouteImport } from './routes/eventos'
+import { Route as ExplorarRouteImport } from './routes/explorar'
+import { Route as MensagensRouteImport } from './routes/mensagens'
+import { Route as NoticiasRouteImport } from './routes/noticias'
+import { Route as NotificacoesRouteImport } from './routes/notificacoes'
+import { Route as OportunidadesRouteImport } from './routes/oportunidades'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as TermosRouteImport } from './routes/termos'
+import { Route as ArtigoSlugRouteImport } from './routes/artigo.$slug'
+import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
+import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtigosRoute = ArtigosRouteImport.update({
+  id: '/artigos',
+  path: '/artigos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComunidadesRoute = ComunidadesRouteImport.update({
+  id: '/comunidades',
+  path: '/comunidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CriarArtigoRoute = CriarArtigoRouteImport.update({
+  id: '/criar-artigo',
+  path: '/criar-artigo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntrarRoute = EntrarRouteImport.update({
@@ -22,31 +64,217 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventosRoute = EventosRouteImport.update({
+  id: '/eventos',
+  path: '/eventos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorarRoute = ExplorarRouteImport.update({
+  id: '/explorar',
+  path: '/explorar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MensagensRoute = MensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NoticiasRoute = NoticiasRouteImport.update({
+  id: '/noticias',
+  path: '/noticias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificacoesRoute = NotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OportunidadesRoute = OportunidadesRouteImport.update({
+  id: '/oportunidades',
+  path: '/oportunidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtigoSlugRoute = ArtigoSlugRouteImport.update({
+  id: '/artigo/$slug',
+  path: '/artigo/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
+  id: '/categoria/$slug',
+  path: '/categoria/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
+  id: '/perfil/$username',
+  path: '/perfil/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/artigos': typeof ArtigosRoute
+  '/comunidades': typeof ComunidadesRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/criar-artigo': typeof CriarArtigoRoute
   '/entrar': typeof EntrarRoute
+  '/eventos': typeof EventosRoute
+  '/explorar': typeof ExplorarRoute
+  '/mensagens': typeof MensagensRoute
+  '/noticias': typeof NoticiasRoute
+  '/notificacoes': typeof NotificacoesRoute
+  '/oportunidades': typeof OportunidadesRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/termos': typeof TermosRoute
+  '/artigo/$slug': typeof ArtigoSlugRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
+  '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/artigos': typeof ArtigosRoute
+  '/comunidades': typeof ComunidadesRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/criar-artigo': typeof CriarArtigoRoute
   '/entrar': typeof EntrarRoute
+  '/eventos': typeof EventosRoute
+  '/explorar': typeof ExplorarRoute
+  '/mensagens': typeof MensagensRoute
+  '/noticias': typeof NoticiasRoute
+  '/notificacoes': typeof NotificacoesRoute
+  '/oportunidades': typeof OportunidadesRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/termos': typeof TermosRoute
+  '/artigo/$slug': typeof ArtigoSlugRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
+  '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/artigos': typeof ArtigosRoute
+  '/comunidades': typeof ComunidadesRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/criar-artigo': typeof CriarArtigoRoute
   '/entrar': typeof EntrarRoute
+  '/eventos': typeof EventosRoute
+  '/explorar': typeof ExplorarRoute
+  '/mensagens': typeof MensagensRoute
+  '/noticias': typeof NoticiasRoute
+  '/notificacoes': typeof NotificacoesRoute
+  '/oportunidades': typeof OportunidadesRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/termos': typeof TermosRoute
+  '/artigo/$slug': typeof ArtigoSlugRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
+  '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/entrar'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/artigos'
+    | '/comunidades'
+    | '/configuracoes'
+    | '/criar-artigo'
+    | '/entrar'
+    | '/eventos'
+    | '/explorar'
+    | '/mensagens'
+    | '/noticias'
+    | '/notificacoes'
+    | '/oportunidades'
+    | '/privacidade'
+    | '/recuperar-senha'
+    | '/termos'
+    | '/artigo/$slug'
+    | '/categoria/$slug'
+    | '/perfil/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/entrar'
-  id: '__root__' | '/' | '/entrar'
+  to:
+    | '/'
+    | '/admin'
+    | '/artigos'
+    | '/comunidades'
+    | '/configuracoes'
+    | '/criar-artigo'
+    | '/entrar'
+    | '/eventos'
+    | '/explorar'
+    | '/mensagens'
+    | '/noticias'
+    | '/notificacoes'
+    | '/oportunidades'
+    | '/privacidade'
+    | '/recuperar-senha'
+    | '/termos'
+    | '/artigo/$slug'
+    | '/categoria/$slug'
+    | '/perfil/$username'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/artigos'
+    | '/comunidades'
+    | '/configuracoes'
+    | '/criar-artigo'
+    | '/entrar'
+    | '/eventos'
+    | '/explorar'
+    | '/mensagens'
+    | '/noticias'
+    | '/notificacoes'
+    | '/oportunidades'
+    | '/privacidade'
+    | '/recuperar-senha'
+    | '/termos'
+    | '/artigo/$slug'
+    | '/categoria/$slug'
+    | '/perfil/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  ArtigosRoute: typeof ArtigosRoute
+  ComunidadesRoute: typeof ComunidadesRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  CriarArtigoRoute: typeof CriarArtigoRoute
   EntrarRoute: typeof EntrarRoute
+  EventosRoute: typeof EventosRoute
+  ExplorarRoute: typeof ExplorarRoute
+  MensagensRoute: typeof MensagensRoute
+  NoticiasRoute: typeof NoticiasRoute
+  NotificacoesRoute: typeof NotificacoesRoute
+  OportunidadesRoute: typeof OportunidadesRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
+  TermosRoute: typeof TermosRoute
+  ArtigoSlugRoute: typeof ArtigoSlugRoute
+  CategoriaSlugRoute: typeof CategoriaSlugRoute
+  PerfilUsernameRoute: typeof PerfilUsernameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +286,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artigos': {
+      id: '/artigos'
+      path: '/artigos'
+      fullPath: '/artigos'
+      preLoaderRoute: typeof ArtigosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comunidades': {
+      id: '/comunidades'
+      path: '/comunidades'
+      fullPath: '/comunidades'
+      preLoaderRoute: typeof ComunidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/criar-artigo': {
+      id: '/criar-artigo'
+      path: '/criar-artigo'
+      fullPath: '/criar-artigo'
+      preLoaderRoute: typeof CriarArtigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entrar': {
       id: '/entrar'
       path: '/entrar'
@@ -65,12 +328,113 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/eventos': {
+      id: '/eventos'
+      path: '/eventos'
+      fullPath: '/eventos'
+      preLoaderRoute: typeof EventosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorar': {
+      id: '/explorar'
+      path: '/explorar'
+      fullPath: '/explorar'
+      preLoaderRoute: typeof ExplorarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mensagens': {
+      id: '/mensagens'
+      path: '/mensagens'
+      fullPath: '/mensagens'
+      preLoaderRoute: typeof MensagensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/noticias': {
+      id: '/noticias'
+      path: '/noticias'
+      fullPath: '/noticias'
+      preLoaderRoute: typeof NoticiasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notificacoes': {
+      id: '/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof NotificacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oportunidades': {
+      id: '/oportunidades'
+      path: '/oportunidades'
+      fullPath: '/oportunidades'
+      preLoaderRoute: typeof OportunidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artigo/$slug': {
+      id: '/artigo/$slug'
+      path: '/artigo/$slug'
+      fullPath: '/artigo/$slug'
+      preLoaderRoute: typeof ArtigoSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categoria/$slug': {
+      id: '/categoria/$slug'
+      path: '/categoria/$slug'
+      fullPath: '/categoria/$slug'
+      preLoaderRoute: typeof CategoriaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil/$username': {
+      id: '/perfil/$username'
+      path: '/perfil/$username'
+      fullPath: '/perfil/$username'
+      preLoaderRoute: typeof PerfilUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  ArtigosRoute: ArtigosRoute,
+  ComunidadesRoute: ComunidadesRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  CriarArtigoRoute: CriarArtigoRoute,
   EntrarRoute: EntrarRoute,
+  EventosRoute: EventosRoute,
+  ExplorarRoute: ExplorarRoute,
+  MensagensRoute: MensagensRoute,
+  NoticiasRoute: NoticiasRoute,
+  NotificacoesRoute: NotificacoesRoute,
+  OportunidadesRoute: OportunidadesRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
+  TermosRoute: TermosRoute,
+  ArtigoSlugRoute: ArtigoSlugRoute,
+  CategoriaSlugRoute: CategoriaSlugRoute,
+  PerfilUsernameRoute: PerfilUsernameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
