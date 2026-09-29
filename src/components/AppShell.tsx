@@ -44,6 +44,20 @@ const navItems = [
   { to: "/mensagens", label: "Mensagens", icon: MessageSquare },
 ] as const;
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setIsDesktop(event.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  return isDesktop;
+}
+
 function useUnreadCount() {
   const { user } = useAuth();
   return useQuery({
