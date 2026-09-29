@@ -27,7 +27,7 @@ export function useCampusData() {
 export function SectionHeading({ title, to, action = "Ver todos" }: { title: string; to?: "/noticias" | "/eventos" | "/oportunidades" | "/comunidades" | "/artigos"; action?: string }) {
   return <div className="mb-4 flex items-center justify-between gap-4"><h2 className="text-lg font-extrabold text-foreground">{title}</h2>{to && <Link to={to} className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-primary-deep hover:underline">{action}<ArrowRight className="h-3.5 w-3.5" /></Link>}</div>;
 }
-export function PageHeading({ title, subtitle }: { title: string; subtitle?: string }) {
+export function PageHeading({ title, subtitle }: { title: string; subtitle?: string | undefined }) {
   return <div className="mb-7 border-b border-border pb-5"><h1 className="text-2xl font-extrabold text-foreground md:text-3xl">{title}</h1>{subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}</div>;
 }
 export function Empty({ text = "Nada por aqui ainda." }: { text?: string }) { return <p className="py-10 text-center text-sm text-muted-foreground">{text}</p>; }
