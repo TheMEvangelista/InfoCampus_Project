@@ -152,6 +152,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: unread } = useUnreadCount();
+  const isDesktop = useIsDesktop();
 
   return (
     <div className="min-h-screen bg-background">
