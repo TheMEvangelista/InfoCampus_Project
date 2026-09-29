@@ -162,13 +162,32 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Abrir ou fechar menu"
+              aria-label={
+                isDesktop
+                  ? collapsed
+                    ? "Expandir menu lateral"
+                    : "Recolher menu lateral"
+                  : mobileOpen
+                    ? "Fechar menu"
+                    : "Abrir menu"
+              }
+              aria-expanded={isDesktop ? !collapsed : mobileOpen}
               onClick={() => {
-                if (window.matchMedia("(min-width: 1024px)").matches) setCollapsed((v) => !v);
+                if (isDesktop) setCollapsed((v) => !v);
                 else setMobileOpen((v) => !v);
               }}
             >
-              <Menu className="h-5 w-5" />
+              {isDesktop ? (
+                collapsed ? (
+                  <PanelLeftOpen className="h-5 w-5" />
+                ) : (
+                  <PanelLeftClose className="h-5 w-5" />
+                )
+              ) : mobileOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
             <Link to="/" className="shrink-0">
               <Logo />
