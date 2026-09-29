@@ -8,6 +8,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Home,
+  LogIn,
   LogOut,
   Menu,
   MessageSquare,
