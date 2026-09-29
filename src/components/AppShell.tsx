@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Bell,
@@ -16,6 +16,7 @@ import {
   Settings,
   Shield,
   Users,
+  X,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +43,20 @@ const navItems = [
   { to: "/comunidades", label: "Comunidades", icon: Users },
   { to: "/mensagens", label: "Mensagens", icon: MessageSquare },
 ] as const;
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setIsDesktop(event.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  return isDesktop;
+}
 
 function useUnreadCount() {
   const { user } = useAuth();
@@ -112,15 +127,23 @@ function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void
         {user ? (
           <button
             onClick={signOut}
-            className="flex w-full items-center gap-3 rounded-xl bg-secondary/10 px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:bg-secondary/20"
+            title={collapsed ? "Sair da conta" : undefined}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-xl bg-secondary/10 px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:bg-secondary/20",
+              collapsed && "justify-center px-0",
+            )}
           >
             <LogOut className="h-4.5 w-4.5 shrink-0" />
             {!collapsed && "Sair da conta"}
           </button>
         ) : (
-          <Button asChild className="w-full">
+          <Button
+            asChild
+            title={collapsed ? "Entrar" : undefined}
+            className={cn("w-full", collapsed && "justify-center px-0")}
+          >
             <Link to="/entrar" onClick={onNavigate}>
-              {collapsed ? "→" : "Entrar"}
+              {collapsed ? <LogIn className="h-4.5 w-4.5" /> : "Entrar"}
             </Link>
           </Button>
         )}
@@ -137,6 +160,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: unread } = useUnreadCount();
+  const isDesktop = useIsDesktop();
 
   return (
     <div className="min-h-screen bg-background">
@@ -146,13 +170,32 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Abrir ou fechar menu"
+              aria-label={
+                isDesktop
+                  ? collapsed
+                    ? "Expandir menu lateral"
+                    : "Recolher menu lateral"
+                  : mobileOpen
+                    ? "Fechar menu"
+                    : "Abrir menu"
+              }
+              aria-expanded={isDesktop ? !collapsed : mobileOpen}
               onClick={() => {
-                if (window.matchMedia("(min-width: 1024px)").matches) setCollapsed((v) => !v);
+                if (isDesktop) setCollapsed((v) => !v);
                 else setMobileOpen((v) => !v);
               }}
             >
-              <Menu className="h-5 w-5" />
+              {isDesktop ? (
+                collapsed ? (
+                  <PanelLeftOpen className="h-5 w-5" />
+                ) : (
+                  <PanelLeftClose className="h-5 w-5" />
+                )
+              ) : mobileOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
             <Link to="/" className="shrink-0">
               <Logo />
@@ -241,33 +284,29 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
       </header>
 
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
-        <aside className={cn("sticky top-20 hidden h-[calc(100vh-6rem)] shrink-0 flex-col rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] lg:flex", collapsed ? "w-16" : "w-60")}>
-          <button
-            onClick={() => setCollapsed((v) => !v)}
-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-            className={cn("m-3 mb-0 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground", collapsed && "justify-center px-0")}
-          >
-            {collapsed ? <PanelLeftOpen className="h-4.5 w-4.5" /> : <><PanelLeftClose className="h-4.5 w-4.5" /> Recolher</>}
-          </button>
-          <div className="min-h-0 flex-1"><SidebarNav collapsed={collapsed} /></div>
+        <aside
+          className={cn(
+            "sticky top-20 hidden h-[calc(100vh-6rem)] shrink-0 flex-col rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] lg:flex",
+            collapsed ? "w-16" : "w-60",
+          )}
+        >
+          <div className="min-h-0 flex-1">
+            <SidebarNav collapsed={collapsed} />
+          </div>
         </aside>
 
         {mobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 z-30 lg:hidden">
             <button
               className="absolute inset-0 bg-foreground/40"
               aria-label="Fechar menu"
               onClick={() => setMobileOpen(false)}
             />
-            <div className="relative flex h-full w-64 flex-col bg-sidebar shadow-card"><div className="contents">
-              <div className="flex items-center justify-between p-4">
-                <Logo />
-                <Button variant="ghost" size="icon" aria-label="Fechar menu" onClick={() => setMobileOpen(false)}>
-                  <PanelLeftClose className="h-5 w-5" />
-                </Button>
+            <div className="relative flex h-full w-64 flex-col bg-sidebar pt-16 shadow-card">
+              <div className="min-h-0 flex-1">
+                <SidebarNav onNavigate={() => setMobileOpen(false)} />
               </div>
-              <div className="min-h-0 flex-1"><SidebarNav onNavigate={() => setMobileOpen(false)} /></div>
-            </div></div>
+            </div>
           </div>
         )}
 
