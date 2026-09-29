@@ -17,7 +17,6 @@ import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as CriarArtigoRouteImport } from './routes/criar-artigo'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as EventosRouteImport } from './routes/eventos'
-import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as NoticiasRouteImport } from './routes/noticias'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
@@ -67,11 +66,6 @@ const EntrarRoute = EntrarRouteImport.update({
 const EventosRoute = EventosRouteImport.update({
   id: '/eventos',
   path: '/eventos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExplorarRoute = ExplorarRouteImport.update({
-  id: '/explorar',
-  path: '/explorar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MensagensRoute = MensagensRouteImport.update({
@@ -134,7 +128,6 @@ export interface FileRoutesByFullPath {
   '/criar-artigo': typeof CriarArtigoRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
-  '/explorar': typeof ExplorarRoute
   '/mensagens': typeof MensagensRoute
   '/noticias': typeof NoticiasRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -155,7 +148,6 @@ export interface FileRoutesByTo {
   '/criar-artigo': typeof CriarArtigoRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
-  '/explorar': typeof ExplorarRoute
   '/mensagens': typeof MensagensRoute
   '/noticias': typeof NoticiasRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -177,7 +169,6 @@ export interface FileRoutesById {
   '/criar-artigo': typeof CriarArtigoRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
-  '/explorar': typeof ExplorarRoute
   '/mensagens': typeof MensagensRoute
   '/noticias': typeof NoticiasRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -200,7 +191,6 @@ export interface FileRouteTypes {
     | '/criar-artigo'
     | '/entrar'
     | '/eventos'
-    | '/explorar'
     | '/mensagens'
     | '/noticias'
     | '/notificacoes'
@@ -221,7 +211,6 @@ export interface FileRouteTypes {
     | '/criar-artigo'
     | '/entrar'
     | '/eventos'
-    | '/explorar'
     | '/mensagens'
     | '/noticias'
     | '/notificacoes'
@@ -242,7 +231,6 @@ export interface FileRouteTypes {
     | '/criar-artigo'
     | '/entrar'
     | '/eventos'
-    | '/explorar'
     | '/mensagens'
     | '/noticias'
     | '/notificacoes'
@@ -264,7 +252,6 @@ export interface RootRouteChildren {
   CriarArtigoRoute: typeof CriarArtigoRoute
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
-  ExplorarRoute: typeof ExplorarRoute
   MensagensRoute: typeof MensagensRoute
   NoticiasRoute: typeof NoticiasRoute
   NotificacoesRoute: typeof NotificacoesRoute
@@ -333,13 +320,6 @@ declare module '@tanstack/react-router' {
       path: '/eventos'
       fullPath: '/eventos'
       preLoaderRoute: typeof EventosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/explorar': {
-      id: '/explorar'
-      path: '/explorar'
-      fullPath: '/explorar'
-      preLoaderRoute: typeof ExplorarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mensagens': {
@@ -424,7 +404,6 @@ const rootRouteChildren: RootRouteChildren = {
   CriarArtigoRoute: CriarArtigoRoute,
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
-  ExplorarRoute: ExplorarRoute,
   MensagensRoute: MensagensRoute,
   NoticiasRoute: NoticiasRoute,
   NotificacoesRoute: NotificacoesRoute,
