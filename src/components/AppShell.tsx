@@ -5,7 +5,8 @@ import {
   Briefcase,
   CalendarDays,
   ChevronDown,
-  Compass,
+  PanelLeftClose,
+  PanelLeftOpen,
   Home,
   LogOut,
   Menu,
@@ -39,7 +40,6 @@ const navItems = [
   { to: "/eventos", label: "Eventos", icon: CalendarDays },
   { to: "/oportunidades", label: "Oportunidades", icon: Briefcase },
   { to: "/comunidades", label: "Comunidades", icon: Users },
-  { to: "/explorar", label: "Explorar", icon: Compass },
   { to: "/mensagens", label: "Mensagens", icon: MessageSquare },
 ] as const;
 
@@ -59,7 +59,7 @@ function useUnreadCount() {
   });
 }
 
-function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void; collapsed?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
@@ -82,7 +82,9 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             key={item.to}
             to={item.to}
             onClick={onNavigate}
+            title={collapsed ? item.label : undefined}
             className={cn(
+              collapsed && "justify-center px-0",
               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
               active
                 ? "bg-accent text-accent-foreground"
@@ -90,7 +92,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             )}
           >
             <item.icon className="h-4.5 w-4.5 shrink-0" />
-            <span className="truncate">{item.label}</span>
+            {!collapsed && <span className="truncate">{item.label}</span>}
           </Link>
         );
       })}
@@ -102,7 +104,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Shield className="h-4.5 w-4.5 shrink-0" />
-          Painel admin
+          {!collapsed && "Painel admin"}
         </Link>
       )}
 
@@ -113,12 +115,12 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             className="flex w-full items-center gap-3 rounded-xl bg-secondary/10 px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:bg-secondary/20"
           >
             <LogOut className="h-4.5 w-4.5 shrink-0" />
-            Sair da conta
+            {!collapsed && "Sair da conta"}
           </button>
         ) : (
           <Button asChild className="w-full">
             <Link to="/entrar" onClick={onNavigate}>
-              Entrar
+              {collapsed ? "→" : "Entrar"}
             </Link>
           </Button>
         )}
@@ -129,6 +131,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [term, setTerm] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -158,7 +161,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             className="relative mx-auto hidden w-full max-w-xl md:block"
             onSubmit={(e) => {
               e.preventDefault();
-              navigate({ to: "/explorar", search: { q: term } });
+              navigate({ to: "/noticias", search: { q: term } as never });
             }}
           >
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -236,8 +239,15 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
       </header>
 
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
-        <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] w-60 shrink-0 rounded-2xl border border-sidebar-border bg-sidebar shadow-card lg:block">
-          <SidebarNav />
+        <aside className={cn("sticky top-20 hidden h-[calc(100vh-6rem)] shrink-0 flex-col rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] lg:flex", collapsed ? "w-16" : "w-60")}>
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+            className={cn("m-3 mb-0 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground", collapsed && "justify-center px-0")}
+          >
+            {collapsed ? <PanelLeftOpen className="h-4.5 w-4.5" /> : <><PanelLeftClose className="h-4.5 w-4.5" /> Recolher</>}
+          </button>
+          <div className="min-h-0 flex-1"><SidebarNav collapsed={collapsed} /></div>
         </aside>
 
         {mobileOpen && (
