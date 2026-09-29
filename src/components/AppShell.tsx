@@ -146,9 +146,11 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
-              aria-label="Abrir menu"
-              onClick={() => setMobileOpen((v) => !v)}
+              aria-label="Abrir ou fechar menu"
+              onClick={() => {
+                if (window.matchMedia("(min-width: 1024px)").matches) setCollapsed((v) => !v);
+                else setMobileOpen((v) => !v);
+              }}
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -257,12 +259,15 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
               aria-label="Fechar menu"
               onClick={() => setMobileOpen(false)}
             />
-            <div className="relative h-full w-64 bg-sidebar shadow-card">
-              <div className="p-4">
+            <div className="relative flex h-full w-64 flex-col bg-sidebar shadow-card"><div className="contents">
+              <div className="flex items-center justify-between p-4">
                 <Logo />
+                <Button variant="ghost" size="icon" aria-label="Fechar menu" onClick={() => setMobileOpen(false)}>
+                  <PanelLeftClose className="h-5 w-5" />
+                </Button>
               </div>
-              <SidebarNav onNavigate={() => setMobileOpen(false)} />
-            </div>
+              <div className="min-h-0 flex-1"><SidebarNav onNavigate={() => setMobileOpen(false)} /></div>
+            </div></div>
           </div>
         )}
 
