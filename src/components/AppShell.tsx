@@ -288,16 +288,23 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
       </header>
 
       <div className="mx-auto flex max-w-[1600px] gap-5 px-3 py-6">
-        <aside
+        <div
           className={cn(
-            "sticky top-20 hidden h-[calc(100vh-6rem)] shrink-0 self-start flex-col overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] duration-500 ease-in-out motion-reduce:transition-none lg:flex",
+            "hidden shrink-0 transition-[width] duration-500 ease-in-out motion-reduce:transition-none lg:block",
             collapsed ? "w-16" : "w-60",
           )}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-            <SidebarNav collapsed={collapsed} />
-          </div>
-        </aside>
+          <aside
+            className={cn(
+              "fixed top-20 bottom-4 left-[max(0.75rem,calc((100vw-1600px)/2+0.75rem))] z-20 flex flex-col overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] duration-500 ease-in-out motion-reduce:transition-none",
+              collapsed ? "w-16" : "w-60",
+            )}
+          >
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <SidebarNav collapsed={collapsed} />
+            </div>
+          </aside>
+        </div>
 
         <div
           className={cn(
