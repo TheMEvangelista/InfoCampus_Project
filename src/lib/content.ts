@@ -14,8 +14,8 @@ async function checked<T>(promise: PromiseLike<{ data: T | null; error: { messag
   return (data ?? []) as T;
 }
 export const content = {
-  articles: () => checked<Article[]>(supabase.from("articles").select("id,slug,title,subtitle,content,cover_url,created_at,featured,tags,author_id,profiles(id,username,full_name,avatar_url),categories(id,slug,name,description)").eq("published", true).order("created_at", { ascending: false })),
-  posts: () => checked<Post[]>(supabase.from("posts").select("id,author_id,community_id,content,image_url,video_url,link_url,created_at,profiles(id,username,full_name,avatar_url),communities(name,slug),post_likes(user_id),comments(id)").order("created_at", { ascending: false }).limit(40)),
+  articles: () => checked<Article[]>(supabase.from("articles").select("id,slug,title,subtitle,content,cover_url,created_at,featured,tags,author_id,profiles!articles_author_id_fkey(id,username,full_name,avatar_url),categories(id,slug,name,description)").eq("published", true).order("created_at", { ascending: false })),
+  posts: () => checked<Post[]>(supabase.from("posts").select("id,author_id,community_id,content,image_url,video_url,link_url,created_at,profiles!posts_author_id_fkey(id,username,full_name,avatar_url),communities(name,slug),post_likes(user_id),comments(id)").order("created_at", { ascending: false }).limit(40)),
   events: () => checked<CampusEvent[]>(supabase.from("events").select("id,title,summary,location,starts_at").order("starts_at", { ascending: true })),
   communities: () => checked<Community[]>(supabase.from("communities").select("id,slug,name,description,cover_url,community_members(user_id)").order("name")),
   categories: () => checked<Category[]>(supabase.from("categories").select("id,slug,name,description").order("name")),
