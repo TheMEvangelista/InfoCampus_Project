@@ -43,6 +43,9 @@ const navItems = [
   { to: "/mensagens", label: "Mensagens", icon: MessageSquare },
 ] as const;
 
+let persistedMobileOpen = false;
+let persistedCollapsed = false;
+
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -150,14 +153,34 @@ function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
 }
 
 export function AppShell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(persistedMobileOpen);
+  const [collapsed, setCollapsed] = useState(persistedCollapsed);
   const [term, setTerm] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: unread } = useUnreadCount();
   const isDesktop = useIsDesktop();
+
+  function toggleSidebar() {
+    if (isDesktop) {
+      setCollapsed((current) => {
+        persistedCollapsed = !current;
+        return persistedCollapsed;
+      });
+      return;
+    }
+
+    setMobileOpen((current) => {
+      persistedMobileOpen = !current;
+      return persistedMobileOpen;
+    });
+  }
+
+  function closeMobileSidebar() {
+    persistedMobileOpen = false;
+    setMobileOpen(false);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,10 +193,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
               aria-label={(isDesktop ? !collapsed : mobileOpen) ? "Fechar menu" : "Abrir menu"}
               aria-expanded={isDesktop ? !collapsed : mobileOpen}
               className="lg:ml-3.5 [&_svg]:size-6 hover:bg-muted hover:text-foreground"
-              onClick={() => {
-                if (isDesktop) setCollapsed((v) => !v);
-                else setMobileOpen((v) => !v);
-              }}
+              onClick={toggleSidebar}
             >
               {(isDesktop ? !collapsed : mobileOpen) ? (
                 <X className="h-6 w-6" />
@@ -293,7 +313,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             )}
             aria-label="Fechar menu"
             tabIndex={mobileOpen ? 0 : -1}
-            onClick={() => setMobileOpen(false)}
+            onClick={closeMobileSidebar}
           />
           <div
             className={cn(
