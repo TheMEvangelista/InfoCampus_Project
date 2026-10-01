@@ -171,7 +171,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
               size="icon"
               aria-label={(isDesktop ? !collapsed : mobileOpen) ? "Fechar menu" : "Abrir menu"}
               aria-expanded={isDesktop ? !collapsed : mobileOpen}
-              className="[&_svg]:size-6 hover:bg-muted hover:text-foreground"
+              className="lg:ml-3.5 [&_svg]:size-6 hover:bg-muted hover:text-foreground"
               onClick={() => {
                 if (isDesktop) setCollapsed((v) => !v);
                 else setMobileOpen((v) => !v);
