@@ -5,8 +5,6 @@ import {
   Briefcase,
   CalendarDays,
   ChevronDown,
-  PanelLeftClose,
-  PanelLeftOpen,
   Home,
   LogIn,
   LogOut,
@@ -166,36 +164,23 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3">
+        <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-3">
           <div className="flex min-w-0 items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              aria-label={
-                isDesktop
-                  ? collapsed
-                    ? "Expandir menu lateral"
-                    : "Recolher menu lateral"
-                  : mobileOpen
-                    ? "Fechar menu"
-                    : "Abrir menu"
-              }
+              aria-label={(isDesktop ? !collapsed : mobileOpen) ? "Fechar menu" : "Abrir menu"}
               aria-expanded={isDesktop ? !collapsed : mobileOpen}
+              className="[&_svg]:size-6 hover:bg-muted hover:text-foreground"
               onClick={() => {
                 if (isDesktop) setCollapsed((v) => !v);
                 else setMobileOpen((v) => !v);
               }}
             >
-              {isDesktop ? (
-                collapsed ? (
-                  <PanelLeftOpen className="h-5 w-5" />
-                ) : (
-                  <PanelLeftClose className="h-5 w-5" />
-                )
-              ) : mobileOpen ? (
-                <X className="h-5 w-5" />
+              {(isDesktop ? !collapsed : mobileOpen) ? (
+                <X className="h-6 w-6" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
               )}
             </Button>
             <Link to="/" className="shrink-0">
@@ -284,7 +269,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
+      <div className="mx-auto flex max-w-[1600px] gap-5 px-3 py-6">
         <aside
           className={cn(
             "sticky top-20 hidden h-[calc(100vh-6rem)] shrink-0 flex-col rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] lg:flex",
