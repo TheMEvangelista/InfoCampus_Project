@@ -43,6 +43,9 @@ const navItems = [
   { to: "/mensagens", label: "Mensagens", icon: MessageSquare },
 ] as const;
 
+let persistedMobileOpen = false;
+let persistedCollapsed = false;
+
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -73,7 +76,7 @@ function useUnreadCount() {
   });
 }
 
-function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void; collapsed?: boolean }) {
+function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
@@ -95,7 +98,6 @@ function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void
           <Link
             key={item.to}
             to={item.to}
-            onClick={onNavigate}
             title={collapsed ? item.label : undefined}
             className={cn(
               collapsed && "justify-center px-0",
@@ -114,7 +116,6 @@ function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void
       {isAdmin && (
         <Link
           to="/admin"
-          onClick={onNavigate}
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Shield className="h-4.5 w-4.5 shrink-0" />
@@ -141,7 +142,7 @@ function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void
             title={collapsed ? "Entrar" : undefined}
             className={cn("w-full", collapsed && "justify-center px-0")}
           >
-            <Link to="/entrar" onClick={onNavigate}>
+            <Link to="/entrar">
               {collapsed ? <LogIn className="h-4.5 w-4.5" /> : "Entrar"}
             </Link>
           </Button>
@@ -152,14 +153,34 @@ function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void
 }
 
 export function AppShell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(persistedMobileOpen);
+  const [collapsed, setCollapsed] = useState(persistedCollapsed);
   const [term, setTerm] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: unread } = useUnreadCount();
   const isDesktop = useIsDesktop();
+
+  function toggleSidebar() {
+    if (isDesktop) {
+      setCollapsed((current) => {
+        persistedCollapsed = !current;
+        return persistedCollapsed;
+      });
+      return;
+    }
+
+    setMobileOpen((current) => {
+      persistedMobileOpen = !current;
+      return persistedMobileOpen;
+    });
+  }
+
+  function closeMobileSidebar() {
+    persistedMobileOpen = false;
+    setMobileOpen(false);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -172,10 +193,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
               aria-label={(isDesktop ? !collapsed : mobileOpen) ? "Fechar menu" : "Abrir menu"}
               aria-expanded={isDesktop ? !collapsed : mobileOpen}
               className="lg:ml-3.5 [&_svg]:size-6 hover:bg-muted hover:text-foreground"
-              onClick={() => {
-                if (isDesktop) setCollapsed((v) => !v);
-                else setMobileOpen((v) => !v);
-              }}
+              onClick={toggleSidebar}
             >
               {(isDesktop ? !collapsed : mobileOpen) ? (
                 <X className="h-6 w-6" />
@@ -270,31 +288,51 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
       </header>
 
       <div className="mx-auto flex max-w-[1600px] gap-5 px-3 py-6">
-        <aside
+        <div
           className={cn(
-            "sticky top-20 hidden h-[calc(100vh-6rem)] shrink-0 flex-col rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] lg:flex",
+            "hidden shrink-0 transition-[width] duration-500 ease-in-out motion-reduce:transition-none lg:block",
             collapsed ? "w-16" : "w-60",
           )}
         >
-          <div className="min-h-0 flex-1">
-            <SidebarNav collapsed={collapsed} />
-          </div>
-        </aside>
+          <aside
+            className={cn(
+              "fixed top-20 bottom-4 left-[max(0.75rem,calc((100vw-1600px)/2+0.75rem))] z-20 flex flex-col overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar shadow-card transition-[width] duration-500 ease-in-out motion-reduce:transition-none",
+              collapsed ? "w-16" : "w-60",
+            )}
+          >
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <SidebarNav collapsed={collapsed} />
+            </div>
+          </aside>
+        </div>
 
-        {mobileOpen && (
-          <div className="fixed inset-0 z-30 lg:hidden">
-            <button
-              className="absolute inset-0 bg-foreground/40"
-              aria-label="Fechar menu"
-              onClick={() => setMobileOpen(false)}
-            />
-            <div className="relative flex h-full w-64 flex-col bg-sidebar pt-16 shadow-card">
-              <div className="min-h-0 flex-1">
-                <SidebarNav onNavigate={() => setMobileOpen(false)} />
-              </div>
+        <div
+          className={cn(
+            "fixed inset-0 z-30 transition-visibility duration-500 motion-reduce:transition-none lg:hidden",
+            mobileOpen ? "visible" : "invisible delay-500",
+          )}
+          aria-hidden={!mobileOpen}
+        >
+          <button
+            className={cn(
+              "absolute inset-0 bg-foreground/40 transition-opacity duration-500 ease-in-out motion-reduce:transition-none",
+              mobileOpen ? "opacity-100" : "opacity-0",
+            )}
+            aria-label="Fechar menu"
+            tabIndex={mobileOpen ? 0 : -1}
+            onClick={closeMobileSidebar}
+          />
+          <div
+            className={cn(
+              "fixed inset-y-0 left-0 flex w-64 flex-col bg-sidebar pt-16 shadow-card transition-transform duration-500 ease-in-out motion-reduce:transition-none",
+              mobileOpen ? "translate-x-0" : "-translate-x-full",
+            )}
+          >
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <SidebarNav />
             </div>
           </div>
-        )}
+        </div>
 
         <main className="min-w-0 flex-1">{children}</main>
 
