@@ -172,6 +172,14 @@
   color: var(--color-muted-foreground);
 }
 
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility scroll-x {
   display: flex;
   gap: 1rem;
