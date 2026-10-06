@@ -103,10 +103,15 @@ function EntrarPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-accent/40 px-4 py-10">
-      <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex justify-center">
-          <Logo />
+      <div className="w-full max-w-[30.8rem]">
+        <Link to="/" className="mb-8 flex justify-center">
+          <Logo
+            className="gap-4"
+            iconClassName="h-16 w-16 sm:h-24 sm:w-24"
+            nameClassName="text-4xl leading-none sm:text-[3.375rem]"
+          />
         </Link>
+
         <Card className="shadow-card">
           <CardContent className="pt-6">
             <Tabs defaultValue="login">
