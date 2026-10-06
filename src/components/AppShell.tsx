@@ -4,7 +4,6 @@ import {
   Bell,
   Briefcase,
   CalendarDays,
-  ChevronDown,
   Home,
   LogIn,
   LogOut,
@@ -14,6 +13,7 @@ import {
   Search,
   Settings,
   Shield,
+  User,
   Users,
   X,
 } from "lucide-react";
@@ -29,7 +29,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -253,14 +252,13 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
                         @{profile?.username ?? "perfil"}
                       </span>
                     </span>
-                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
                   {profile && (
                     <DropdownMenuItem asChild>
                       <Link to="/perfil/$username" params={{ username: profile.username }}>
-                        Meu perfil
+                        <User className="mr-2 h-4 w-4" /> Meu perfil
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -268,13 +266,6 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
                     <Link to="/configuracoes">
                       <Settings className="mr-2 h-4 w-4" /> Configurações
                     </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/criar-artigo">Escrever artigo</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/mensagens">Mensagens</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
