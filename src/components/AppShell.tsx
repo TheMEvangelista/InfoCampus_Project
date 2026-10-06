@@ -5,7 +5,6 @@ import {
   Briefcase,
   CalendarDays,
   Home,
-  LogIn,
   LogOut,
   Menu,
   MessageSquare,
@@ -122,8 +121,8 @@ function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
         </Link>
       )}
 
-      <div className="mt-auto pt-4">
-        {user ? (
+      {user && (
+        <div className="mt-auto pt-4">
           <button
             onClick={signOut}
             title={collapsed ? "Sair da conta" : undefined}
@@ -135,18 +134,9 @@ function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
             <LogOut className="h-4.5 w-4.5 shrink-0" />
             {!collapsed && "Sair da conta"}
           </button>
-        ) : (
-          <Button
-            asChild
-            title={collapsed ? "Entrar" : undefined}
-            className={cn("w-full", collapsed && "justify-center px-0")}
-          >
-            <Link to="/entrar">
-              {collapsed ? <LogIn className="h-4.5 w-4.5" /> : "Entrar"}
-            </Link>
-          </Button>
-        )}
-      </div>
+        </div>
+      )}
+
     </nav>
   );
 }
