@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { IFMA_SITE, INSTITUTIONAL_DOMAIN, isInstitutionalEmail, useAuth } from "@/lib/auth";
+import { isSafeHttpUrl } from "@/lib/url";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,6 +84,9 @@ function EntrarPage() {
     if (fullName.length < 3) return toast.error("Informe seu nome completo.");
     if (username.length < 3) return toast.error("Escolha um nome de usuário com 3+ caracteres.");
     if (password.length < 6) return toast.error("A senha precisa ter ao menos 6 caracteres.");
+    if (avatarUrl && !isSafeHttpUrl(avatarUrl)) {
+      return toast.error("Link da foto inválido", { description: "Use um endereço que comece com http:// ou https://." });
+    }
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({
@@ -95,7 +99,13 @@ function EntrarPage() {
     });
     setLoading(false);
     if (error) {
-      toast.error("Não foi possível cadastrar", { description: error.message });
+      // O banco rejeita e-mails fora do domínio institucional; o Supabase devolve um erro genérico.
+      const blockedByDatabase = /database error|institucion/i.test(error.message);
+      toast.error("Não foi possível cadastrar", {
+        description: blockedByDatabase
+          ? `Confirme que está usando seu e-mail institucional (@${INSTITUTIONAL_DOMAIN}).`
+          : error.message,
+      });
       return;
     }
     toast.success("Confira seu e-mail institucional para confirmar a conta.");

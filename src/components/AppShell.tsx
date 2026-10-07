@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, useIsAdmin, useProfile } from "@/lib/auth";
+import { useAuth, useIsStaff, useProfile } from "@/lib/auth";
+import { safeUrl } from "@/lib/url";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +78,7 @@ function useUnreadCount() {
 function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
-  const { data: isAdmin } = useIsAdmin();
+  const { data: isAdmin } = useIsStaff();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -229,7 +230,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 rounded-2xl border border-border bg-card px-2 py-1.5 text-left transition-colors hover:bg-muted">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
+                      <AvatarImage src={safeUrl(profile?.avatar_url) ?? undefined} alt="" />
                       <AvatarFallback>
                         {(profile?.full_name ?? "?").slice(0, 1).toUpperCase()}
                       </AvatarFallback>

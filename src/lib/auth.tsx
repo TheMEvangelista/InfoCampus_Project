@@ -3,11 +3,14 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const INSTITUTIONAL_DOMAIN = "acad.ifma.edu.br";
+// Mantenha esta lista igual à da função public.enforce_institutional_email() no banco.
+export const ALLOWED_EMAIL_DOMAINS = ["acad.ifma.edu.br"] as const;
+export const INSTITUTIONAL_DOMAIN = ALLOWED_EMAIL_DOMAINS[0];
 export const IFMA_SITE = "https://www.ifma.edu.br";
 
 export function isInstitutionalEmail(email: string) {
-  return email.trim().toLowerCase().endsWith(`@${INSTITUTIONAL_DOMAIN}`);
+  const normalized = email.trim().toLowerCase();
+  return ALLOWED_EMAIL_DOMAINS.some((domain) => normalized.endsWith(`@${domain}`));
 }
 
 export type Profile = {
@@ -93,6 +96,23 @@ export function useIsAdmin() {
         .eq("user_id", user!.id);
       if (error) throw error;
       return (data ?? []).some((r) => r.role === "admin");
+    },
+  });
+}
+
+/** Admin ou editor: pode aprovar/destacar artigos e (futuramente) gerir eventos e oportunidades. */
+export function useIsStaff() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["is-staff", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return (data ?? []).some((r) => r.role === "admin" || r.role === "editor");
     },
   });
 }
