@@ -1,4 +1,0 @@
-- [x] Replace the example home with the InfoCampus dashboard and live content.
-- [x] Create every page linked from AppShell, including related authentication and article detail pages.
-- [x] Verify navigation and page rendering on desktop and mobile.
-- [x] Add horizontal sidebar shortcuts below the home composer on tablet and mobile.
