@@ -33,3 +33,7 @@ dist-ssr
 
 # .Env Files
 .env*
+!.env.example
+
+# Witless Files
+.config*
