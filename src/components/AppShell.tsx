@@ -146,6 +146,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
   const [mobileOpen, setMobileOpen] = useState(persistedMobileOpen);
   const [collapsed, setCollapsed] = useState(persistedCollapsed);
   const [term, setTerm] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -200,7 +201,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             className="relative mx-auto hidden w-full max-w-xl md:block"
             onSubmit={(e) => {
               e.preventDefault();
-              navigate({ to: "/noticias", search: { q: term } as never });
+              navigate({ to: "/buscar", search: { q: term.trim(), tipo: "artigos", pagina: 1 } });
             }}
           >
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -209,11 +210,13 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
               onChange={(e) => setTerm(e.target.value)}
               placeholder="Buscar notícias, pessoas, comunidades..."
               aria-label="Buscar no InfoCampus"
+              maxLength={100}
               className="rounded-full bg-muted pl-9"
             />
           </form>
 
           <div className="flex shrink-0 items-center gap-2">
+            <Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir pesquisa" aria-expanded={mobileSearchOpen} onClick={() => setMobileSearchOpen(open => !open)}><Search className="h-5 w-5" /></Button>
             <Button asChild variant="ghost" size="icon" className="relative" aria-label="Notificações">
               <Link to="/notificacoes">
                 <Bell className="h-5 w-5" />
@@ -267,6 +270,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             )}
           </div>
         </div>
+        {mobileSearchOpen && <form role="search" className="flex gap-2 border-t border-border px-3 py-3 md:hidden" onSubmit={e => { e.preventDefault(); setMobileSearchOpen(false); navigate({ to: "/buscar", search: { q: term.trim(), tipo: "artigos", pagina: 1 } }); }}><Input autoFocus aria-label="Pesquisar no InfoCampus" maxLength={100} value={term} onChange={e => setTerm(e.target.value)} placeholder="Buscar notícias, pessoas, comunidades..." /><Button type="submit" aria-label="Pesquisar"><Search /></Button></form>}
       </header>
 
       <div className="mx-auto flex max-w-[1600px] gap-5 px-3 py-6">
