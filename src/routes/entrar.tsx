@@ -38,7 +38,7 @@ function EntrarPage() {
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const email = String(form.get("email") ?? "");
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
     const password = String(form.get("password") ?? "");
 
     if (!isInstitutionalEmail(email)) {
@@ -64,7 +64,7 @@ function EntrarPage() {
   async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const email = String(form.get("email") ?? "");
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
     const password = String(form.get("password") ?? "");
     const fullName = String(form.get("full_name") ?? "").trim();
     const username = String(form.get("username") ?? "")
@@ -93,13 +93,18 @@ function EntrarPage() {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
         data: { full_name: fullName, username, avatar_url: avatarUrl || null },
       },
     });
     setLoading(false);
     if (error) {
-      // O banco rejeita e-mails fora do domínio institucional; o Supabase devolve um erro genérico.
+      if (/already registered|already been registered|user exists|duplicate key/i.test(error.message)) {
+        toast.error("Este e-mail institucional já possui uma conta.", {
+          description: "Entre com a conta existente ou recupere sua senha.",
+        });
+        return;
+      }
+      // O banco bloqueia domínios externos no trigger de auth.users.
       const blockedByDatabase = /database error|institucion/i.test(error.message);
       toast.error("Não foi possível cadastrar", {
         description: blockedByDatabase
@@ -108,7 +113,8 @@ function EntrarPage() {
       });
       return;
     }
-    toast.success("Confira seu e-mail institucional para confirmar a conta.");
+    toast.success("Conta criada com sucesso. Você já está conectado.");
+    navigate({ to: "/" });
   }
 
   return (
