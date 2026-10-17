@@ -52,6 +52,7 @@ export function CommunityTile({ community }: { community: Community }) {
   }
   return <div className="flex items-center gap-3 rounded-md border border-border bg-card p-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-deep"><Users className="h-5 w-5" /></div><div className="min-w-0 flex-1"><h3 className="truncate text-sm font-bold">{community.name}</h3><p className="line-clamp-1 text-xs text-muted-foreground">{community.description}</p><span className="text-[11px] text-muted-foreground">{community.community_members.length} membros</span></div><Button size="sm" variant={member ? "outline" : "default"} onClick={toggle} className="shrink-0">{member ? "Sair" : "Participar"}</Button></div>;
 }
+const opportunityLabels: Record<string, string> = { estagio: "Estágio", emprego: "Emprego", bolsa: "Bolsa", pesquisa: "Pesquisa", monitoria: "Monitoria" };
 export function OpportunityTile({ item }: { item: Opportunity }) {
   const edital = safeUrl(item.edital_url);
   const cadastro = safeUrl(item.registration_url);
