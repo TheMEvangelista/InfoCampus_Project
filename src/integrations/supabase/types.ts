@@ -417,32 +417,41 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          attachment_urls: string[]
           author_id: string | null
           created_at: string
           deadline: string | null
           description: string
+          edital_url: string | null
           id: string
           link: string | null
+          registration_url: string | null
           title: string
           type: Database["public"]["Enums"]["opportunity_type"]
         }
         Insert: {
+          attachment_urls?: string[]
           author_id?: string | null
           created_at?: string
           deadline?: string | null
           description: string
+          edital_url?: string | null
           id?: string
           link?: string | null
+          registration_url?: string | null
           title: string
           type?: Database["public"]["Enums"]["opportunity_type"]
         }
         Update: {
+          attachment_urls?: string[]
           author_id?: string | null
           created_at?: string
           deadline?: string | null
           description?: string
+          edital_url?: string | null
           id?: string
           link?: string | null
+          registration_url?: string | null
           title?: string
           type?: Database["public"]["Enums"]["opportunity_type"]
         }

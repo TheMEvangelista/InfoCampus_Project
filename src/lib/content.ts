@@ -6,7 +6,7 @@ export type Article = { id: string; slug: string; title: string; subtitle: strin
 export type Post = { id: string; author_id: string; community_id: string | null; content: string; image_url: string | null; video_url: string | null; link_url: string | null; created_at: string; profiles: Author | null; communities: { name: string; slug: string } | null; post_likes: { user_id: string }[]; comments: { id: string }[] };
 export type CampusEvent = { id: string; title: string; summary: string | null; location: string | null; starts_at: string };
 export type Community = { id: string; slug: string; name: string; description: string | null; cover_url: string | null; community_members: { user_id: string }[] };
-export type Opportunity = { id: string; title: string; type: string; description: string; deadline: string | null; link: string | null };
+export type Opportunity = { id: string; title: string; type: string; description: string; deadline: string | null; link: string | null; edital_url: string | null; attachment_urls: string[]; registration_url: string | null };
 
 async function checked<T>(promise: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {
   const { data, error } = await promise;
@@ -19,5 +19,5 @@ export const content = {
   events: () => checked<CampusEvent[]>(supabase.from("events").select("id,title,summary,location,starts_at").order("starts_at", { ascending: true })),
   communities: () => checked<Community[]>(supabase.from("communities").select("id,slug,name,description,cover_url,community_members(user_id)").order("name")),
   categories: () => checked<Category[]>(supabase.from("categories").select("id,slug,name,description").order("name")),
-  opportunities: () => checked<Opportunity[]>(supabase.from("opportunities").select("id,title,type,description,deadline,link").order("created_at", { ascending: false })),
+  opportunities: () => checked<Opportunity[]>(supabase.from("opportunities").select("id,title,type,description,deadline,link,edital_url,attachment_urls,registration_url").order("created_at", { ascending: false })),
 };

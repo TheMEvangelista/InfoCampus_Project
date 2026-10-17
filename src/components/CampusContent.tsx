@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Bookmark, CalendarDays, Heart, ImagePlus, Link2, MapPin, MessageCircle, MoreHorizontal, Send, Share2, Video, Users } from "lucide-react";
+import { ArrowRight, Bookmark, CalendarDays, ExternalLink, FileText, Heart, ImagePlus, Link2, MapPin, MessageCircle, MoreHorizontal, Send, Share2, Video, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/lib/auth";
 import { content, type Article, type Post, type CampusEvent, type Community, type Opportunity } from "@/lib/content";
@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import campusStudents from "@/assets/campus-students.jpg";
-import campusRobotics from "@/assets/campus-robotics.jpg";
+import campusStudents from "@/assets/Images/Image-1.jpg";
+import campusRobotics from "@/assets/Images/Image-2.jpg";
 
 export const articleImage = (article: Article) => safeUrl(article.cover_url) || (article.slug === "semana-tecnologia" ? campusRobotics : campusStudents);
 export function useCampusData() {
@@ -53,9 +53,27 @@ export function CommunityTile({ community }: { community: Community }) {
   return <div className="flex items-center gap-3 rounded-md border border-border bg-card p-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-deep"><Users className="h-5 w-5" /></div><div className="min-w-0 flex-1"><h3 className="truncate text-sm font-bold">{community.name}</h3><p className="line-clamp-1 text-xs text-muted-foreground">{community.description}</p><span className="text-[11px] text-muted-foreground">{community.community_members.length} membros</span></div><Button size="sm" variant={member ? "outline" : "default"} onClick={toggle} className="shrink-0">{member ? "Sair" : "Participar"}</Button></div>;
 }
 export function OpportunityTile({ item }: { item: Opportunity }) {
-  return <div className="rounded-md border border-border bg-card p-5"><span className="text-[10px] font-extrabold uppercase text-secondary">{item.type}</span><h3 className="mt-1 text-base font-bold">{item.title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.description}</p>{item.deadline && <p className="mt-3 text-xs text-muted-foreground">Inscrições até {dateLong(item.deadline)}</p>}{safeUrl(item.link) && <a className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary-deep hover:underline" href={safeUrl(item.link)!} target="_blank" rel="noopener noreferrer">Saiba mais <ArrowRight className="h-4 w-4" /></a>}</div>;
-}
-export function Composer() {
+  const edital = safeUrl(item.edital_url);
+  const cadastro = safeUrl(item.registration_url);
+  const anexos = (item.attachment_urls ?? []).map(safeUrl).filter((url): url is string => !!url);
+  const detalhes = safeUrl(item.link);
+  return <article className="rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-card sm:p-5">
+    <span className="text-[10px] font-extrabold uppercase tracking-wide text-secondary">{item.type}</span>
+    <h2 className="mt-1 text-sm font-bold leading-snug">{item.title}</h2>
+    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+    {item.deadline && <p className="mt-3 text-[11px] text-muted-foreground">Inscri��es at� {dateLong(item.deadline)}</p>}
+    <details className="group mt-3 border-t border-border pt-3">
+      <summary className="flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-bold text-primary-deep hover:underline [&::-webkit-details-marker]:hidden">Ver detalhes <ArrowRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" /></summary>
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+        {edital && <a className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={edital} target="_blank" rel="noopener noreferrer"><FileText className="h-3.5 w-3.5" /> Edital (PDF)</a>}
+        {anexos.map((url, index) => <a key={`${url}-${index}`} className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={url} target="_blank" rel="noopener noreferrer"><FileText className="h-3.5 w-3.5" /> Anexo {index + 1}</a>)}
+        {cadastro && <a className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={cadastro} target="_blank" rel="noopener noreferrer">Acessar cadastro <ExternalLink className="h-3.5 w-3.5" /></a>}
+        {!edital && anexos.length === 0 && !cadastro && detalhes && <a className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={detalhes} target="_blank" rel="noopener noreferrer">Saiba mais <ExternalLink className="h-3.5 w-3.5" /></a>}
+        {!edital && anexos.length === 0 && !cadastro && !detalhes && <p className="text-xs text-muted-foreground">Consulte a descri��o para mais informa��es.</p>}
+      </div>
+    </details>
+  </article>;
+}export function Composer() {
   const { user } = useAuth(); const { data: profile } = useProfile(); const queryClient = useQueryClient();
   const [text, setText] = useState(""); const [mediaType, setMediaType] = useState<"image_url" | "video_url" | "link_url" | null>(null); const [url, setUrl] = useState(""); const [busy, setBusy] = useState(false);
   async function submit(e: FormEvent) {

@@ -1,4 +1,4 @@
-import logoUrl from "@/assets/infocampus-logo.svg";
+import logoUrl from "@/assets/svg/infocampus-logo.svg";
 import { cn } from "@/lib/utils";
 
 export function Logo({
