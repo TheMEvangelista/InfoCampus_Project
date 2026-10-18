@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MessagesPage } from "@/components/CampusPages";
 
 export const Route = createFileRoute("/mensagens")({
+  validateSearch: (search: Record<string, unknown>) => ({ para: typeof search.para === "string" ? search.para.slice(0, 40) : undefined }),
   head: () => ({ meta: [
     { title: "Mensagens — InfoCampus" },
     { name: "description", content: "Suas conversas no InfoCampus." },
