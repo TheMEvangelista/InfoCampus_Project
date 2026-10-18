@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useIsStaff, useProfile } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
@@ -32,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { normalizeSearch } from "@/lib/search";
 
 const navItems = [
   { to: "/", label: "Início", icon: Home },
@@ -153,6 +155,27 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
   const { data: unread } = useUnreadCount();
   const isDesktop = useIsDesktop();
 
+  async function openSearchResult() {
+    const query = normalizeSearch(term);
+    if (!query) return;
+    const exact = await supabase.from("profiles").select("username").ilike("username", query.replace(/^@/, "")).maybeSingle();
+    if (exact.data?.username) {
+      navigate({ to: "/perfil/$username", params: { username: exact.data.username } });
+      setMobileSearchOpen(false);
+      return;
+    }
+    const people = await supabase.from("profiles").select("username").ilike("full_name", query).limit(2);
+    if (people.data?.length === 1) {
+      navigate({ to: "/perfil/$username", params: { username: people.data[0].username } });
+      setMobileSearchOpen(false);
+      return;
+    }
+    const articles = await supabase.from("articles").select("slug").eq("published", true).ilike("title", query).limit(2);
+    if (articles.data?.length === 1) navigate({ to: "/artigo/$slug", params: { slug: articles.data[0].slug } });
+    else toast.info("Nenhum perfil ou artigo correspondente foi encontrado.");
+    setMobileSearchOpen(false);
+  }
+
   function toggleSidebar() {
     if (isDesktop) {
       setCollapsed((current) => {
@@ -201,14 +224,14 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             className="relative mx-auto hidden w-full max-w-xl md:block"
             onSubmit={(e) => {
               e.preventDefault();
-              navigate({ to: "/buscar", search: { q: term.trim(), tipo: "artigos", pagina: 1 } });
+              void openSearchResult();
             }}
           >
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
-              placeholder="Buscar notícias, pessoas, comunidades..."
+              placeholder="Buscar perfil ou artigo pelo título..."
               aria-label="Buscar no InfoCampus"
               maxLength={100}
               className="rounded-full bg-muted pl-9"
@@ -270,7 +293,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             )}
           </div>
         </div>
-        {mobileSearchOpen && <form role="search" className="flex gap-2 border-t border-border px-3 py-3 md:hidden" onSubmit={e => { e.preventDefault(); setMobileSearchOpen(false); navigate({ to: "/buscar", search: { q: term.trim(), tipo: "artigos", pagina: 1 } }); }}><Input autoFocus aria-label="Pesquisar no InfoCampus" maxLength={100} value={term} onChange={e => setTerm(e.target.value)} placeholder="Buscar notícias, pessoas, comunidades..." /><Button type="submit" aria-label="Pesquisar"><Search /></Button></form>}
+        {mobileSearchOpen && <form role="search" className="flex gap-2 border-t border-border px-3 py-3 md:hidden" onSubmit={e => { e.preventDefault(); void openSearchResult(); }}><Input autoFocus aria-label="Pesquisar no InfoCampus" maxLength={100} value={term} onChange={e => setTerm(e.target.value)} placeholder="Buscar pessoas ou artigos..." /><Button type="submit" aria-label="Pesquisar"><Search /></Button></form>}
       </header>
 
       <div className="mx-auto flex max-w-[1600px] gap-5 px-3 py-6">
