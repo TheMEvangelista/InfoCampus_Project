@@ -10,5 +10,10 @@ export const Route = createFileRoute("/categoria/$slug")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
-  component: () => <CategoryPage slug={Route.useParams().slug} />,
+  component: CategoryRoute,
 });
+
+function CategoryRoute() {
+  const { slug } = Route.useParams();
+  return <CategoryPage slug={slug} />;
+}

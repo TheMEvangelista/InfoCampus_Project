@@ -10,5 +10,10 @@ export const Route = createFileRoute("/perfil/$username")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
-  component: () => <ProfilePage username={Route.useParams().username} />,
+  component: ProfileRoute,
 });
+
+function ProfileRoute() {
+  const { username } = Route.useParams();
+  return <ProfilePage username={username} />;
+}

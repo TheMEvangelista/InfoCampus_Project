@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Bookmark, CalendarDays, ExternalLink, FileText, Heart, ImagePlus, Link2, MapPin, MessageCircle, MoreHorizontal, Send, Share2, Video, Users } from "lucide-react";
+import { ArrowRight, Bookmark, Briefcase, CalendarDays, ExternalLink, FileText, Heart, ImagePlus, Link2, MapPin, MessageCircle, MoreHorizontal, Paperclip, Send, Share2, Video, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/lib/auth";
 import { content, type Article, type Post, type CampusEvent, type Community, type Opportunity } from "@/lib/content";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import campusStudents from "@/assets/Images/Image-1.jpg";
 import campusRobotics from "@/assets/Images/Image-2.jpg";
 
@@ -52,29 +53,179 @@ export function CommunityTile({ community }: { community: Community }) {
   }
   return <div className="flex items-center gap-3 rounded-md border border-border bg-card p-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-deep"><Users className="h-5 w-5" /></div><div className="min-w-0 flex-1"><h3 className="truncate text-sm font-bold">{community.name}</h3><p className="line-clamp-1 text-xs text-muted-foreground">{community.description}</p><span className="text-[11px] text-muted-foreground">{community.community_members.length} membros</span></div><Button size="sm" variant={member ? "outline" : "default"} onClick={toggle} className="shrink-0">{member ? "Sair" : "Participar"}</Button></div>;
 }
-const opportunityLabels: Record<string, string> = { estagio: "Estágio", emprego: "Emprego", bolsa: "Bolsa", pesquisa: "Pesquisa", monitoria: "Monitoria" };
+export const opportunityLabels: Record<string, string> = {
+  estagio: "Estágio",
+  emprego: "Emprego",
+  bolsa: "Bolsa",
+  pesquisa: "Pesquisa",
+  monitoria: "Monitoria",
+};
+
 export function OpportunityTile({ item }: { item: Opportunity }) {
+  const [open, setOpen] = useState(false);
+  const label = (opportunityLabels[item.type] ?? item.type).toUpperCase();
   const edital = safeUrl(item.edital_url);
   const cadastro = safeUrl(item.registration_url);
-  const anexos = (item.attachment_urls ?? []).map(safeUrl).filter((url): url is string => !!url);
+  const anexos = item.attachments ?? (item.attachment_urls ?? []).map((url, i) => ({ name: `Anexo ${i + 1}`, url }));
   const detalhes = safeUrl(item.link);
-  return <article className="rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-card sm:p-5">
-    <span className="text-[10px] font-extrabold uppercase tracking-wide text-secondary">{item.type}</span>
-    <h2 className="mt-1 text-sm font-bold leading-snug">{item.title}</h2>
-    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
-    {item.deadline && <p className="mt-3 text-[11px] text-muted-foreground">Inscri��es at� {dateLong(item.deadline)}</p>}
-    <details className="group mt-3 border-t border-border pt-3">
-      <summary className="flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-bold text-primary-deep hover:underline [&::-webkit-details-marker]:hidden">Ver detalhes <ArrowRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" /></summary>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-        {edital && <a className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={edital} target="_blank" rel="noopener noreferrer"><FileText className="h-3.5 w-3.5" /> Edital (PDF)</a>}
-        {anexos.map((url, index) => <a key={`${url}-${index}`} className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={url} target="_blank" rel="noopener noreferrer"><FileText className="h-3.5 w-3.5" /> Anexo {index + 1}</a>)}
-        {cadastro && <a className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={cadastro} target="_blank" rel="noopener noreferrer">Acessar cadastro <ExternalLink className="h-3.5 w-3.5" /></a>}
-        {!edital && anexos.length === 0 && !cadastro && detalhes && <a className="inline-flex items-center gap-1 text-xs font-semibold text-primary-deep hover:underline" href={detalhes} target="_blank" rel="noopener noreferrer">Saiba mais <ExternalLink className="h-3.5 w-3.5" /></a>}
-        {!edital && anexos.length === 0 && !cadastro && !detalhes && <p className="text-xs text-muted-foreground">Consulte a descri��o para mais informa��es.</p>}
-      </div>
-    </details>
-  </article>;
-}export function Composer() {
+
+  return (
+    <>
+      <article className="group flex flex-col justify-between rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-card">
+        <div>
+          <span className="text-[10px] font-extrabold uppercase tracking-wide text-secondary">
+            {label}
+          </span>
+          <h2 className="mt-1.5 text-base font-bold leading-snug text-foreground transition-colors group-hover:text-primary-deep">
+            {item.title}
+          </h2>
+          <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+            {item.description}
+          </p>
+        </div>
+
+        <div className="mt-4 pt-2">
+          {item.deadline && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              Inscrições até {dateLong(item.deadline)}
+            </p>
+          )}
+
+          <div className="mt-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-primary-deep hover:underline"
+            >
+              Ver detalhes <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </button>
+
+            {item.period && (
+              <span className="text-[10px] text-muted-foreground/80 font-medium">
+                Vigência 2026/2027
+              </span>
+            )}
+          </div>
+        </div>
+      </article>
+
+      {/* Details Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-secondary">
+              {label}
+            </span>
+            <DialogTitle className="text-lg font-bold leading-snug text-foreground mt-1 text-left">
+              {item.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Period & Category banner */}
+          <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2 text-xs text-muted-foreground">
+            {item.period ? (
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 shrink-0 text-secondary" />
+                <span><strong>Período de inscrições:</strong> {item.period}</span>
+              </div>
+            ) : item.deadline ? (
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 shrink-0 text-secondary" />
+                <span><strong>Inscrições até:</strong> {dateLong(item.deadline)}</span>
+              </div>
+            ) : null}
+
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4 shrink-0 text-primary-deep" />
+              <span><strong>Tipo:</strong> {opportunityLabels[item.type] ?? item.type}</span>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-1.5">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sobre a Oportunidade</h4>
+            <p className="text-sm leading-relaxed text-foreground whitespace-pre-line">
+              {item.description}
+            </p>
+          </div>
+
+          {/* Edital File */}
+          {(item.edital_title || edital) && (
+            <div className="space-y-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Arquivo do Edital</h4>
+              <div className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-deep">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-foreground truncate">
+                    {item.edital_title || "Arquivo do Edital de Abertura"}
+                  </span>
+                </div>
+                {edital && (
+                  <Button asChild size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0">
+                    <a href={edital} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3 w-3" /> Acessar
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Anexos */}
+          {anexos.length > 0 && (
+            <div className="space-y-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Anexos e Declarações</h4>
+              <div className="divide-y divide-border rounded-lg border border-border bg-card">
+                {anexos.map((anexo, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2.5 text-xs">
+                    <div className="flex items-center gap-2 min-w-0 pr-2">
+                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <span className="truncate text-foreground font-medium">{anexo.name}</span>
+                    </div>
+                    {anexo.url && (
+                      <a
+                        href={safeUrl(anexo.url) ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex shrink-0 items-center gap-1 font-semibold text-primary-deep hover:underline"
+                      >
+                        Baixar
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-4 flex flex-col sm:flex-row gap-2 pt-2 border-t border-border">
+            {cadastro && (
+              <Button asChild className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary-deep">
+                <a href={cadastro} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5">
+                  Acessar Inscrições <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
+            {!cadastro && detalhes && (
+              <Button asChild variant="outline" className="w-full sm:w-auto">
+                <a href={detalhes} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5">
+                  Saiba mais <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
+            <Button variant="ghost" onClick={() => setOpen(false)} className="w-full sm:w-auto">
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+export function Composer() {
   const { user } = useAuth(); const { data: profile } = useProfile(); const queryClient = useQueryClient();
   const [text, setText] = useState(""); const [mediaType, setMediaType] = useState<"image_url" | "video_url" | "link_url" | null>(null); const [url, setUrl] = useState(""); const [busy, setBusy] = useState(false);
   async function submit(e: FormEvent) {

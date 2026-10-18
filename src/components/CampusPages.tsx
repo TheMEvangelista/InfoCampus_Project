@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Bell, Mail, MapPin, Search, Send, Users } from "lucide-react";
+import { ArrowLeft, Bell, Briefcase, ExternalLink, FileText, Mail, MapPin, Paperclip, Search, Send, Users } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ArticleCard, CommunityTile, Composer, Empty, EventRow, OpportunityTile, PageHeading, PostCard, SectionHeading, articleImage, useCampusData } from "@/components/CampusContent";
 import { content } from "@/lib/content";
@@ -26,8 +26,9 @@ export function ListingPage({ kind }: { kind: "noticias" | "eventos" | "oportuni
   const { articles: allArticles, events, opportunities, communities } = useCampusData();
   const q = String((useRouterState({ select: s => s.location.search }) as { q?: string }).q ?? "").toLowerCase();
   const articles = { data: allArticles.data?.filter(a => `${a.title} ${a.subtitle ?? ""} ${a.tags.join(" ")}`.toLowerCase().includes(q)) };
+  const filteredOpportunities = opportunities.data?.filter(o => !q || `${o.title} ${o.description} ${o.type} ${o.period ?? ""}`.toLowerCase().includes(q)) ?? [];
   const config = ({ noticias: ["Notícias", "Acompanhe o que acontece no IFMA."], eventos: ["Eventos", "Encontros, oficinas e atividades do campus."], oportunidades: ["Oportunidades", "Vagas, bolsas e projetos para dar o próximo passo."], comunidades: ["Comunidades", "Encontre pessoas com os mesmos interesses."], artigos: ["Artigos", "Ideias e histórias da nossa comunidade."] } as Record<string, [string, string]>)[kind]!;
-  return <AppShell><PageHeading title={config[0]} subtitle={config[1]} />{(kind === "noticias" || kind === "artigos") && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{articles.data?.map(a => <ArticleCard key={a.id} article={a} />)}{articles.data?.length === 0 && <Empty />}</div>}{kind === "eventos" && <div className="grid gap-4 md:grid-cols-2">{events.data?.map(e => <div key={e.id} className="rounded-md border border-border bg-card px-5 py-3"><EventRow event={e} /><p className="pb-2 text-xs text-muted-foreground">{dateLong(e.starts_at)}</p></div>)}{events.data?.length === 0 && <Empty />}</div>}{kind === "oportunidades" && <div className="grid gap-3 sm:grid-cols-2">{opportunities.data?.map(o => <OpportunityTile item={o} key={o.id} />)}{opportunities.data?.length === 0 && <Empty />}</div>}{kind === "comunidades" && <div className="grid gap-3 md:grid-cols-2">{communities.data?.map(c => <CommunityTile community={c} key={c.id} />)}{communities.data?.length === 0 && <Empty />}</div>}</AppShell>;
+  return <AppShell><PageHeading title={config[0]} subtitle={config[1]} />{(kind === "noticias" || kind === "artigos") && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{articles.data?.map(a => <ArticleCard key={a.id} article={a} />)}{articles.data?.length === 0 && <Empty />}</div>}{kind === "eventos" && <div className="grid gap-4 md:grid-cols-2">{events.data?.map(e => <div key={e.id} className="rounded-md border border-border bg-card px-5 py-3"><EventRow event={e} /><p className="pb-2 text-xs text-muted-foreground">{dateLong(e.starts_at)}</p></div>)}{events.data?.length === 0 && <Empty />}</div>}{kind === "oportunidades" && <div className="grid gap-4 md:grid-cols-2">{filteredOpportunities.map(o => <OpportunityTile item={o} key={o.id} />)}{filteredOpportunities.length === 0 && <Empty text="Nenhuma oportunidade encontrada." />}</div>}{kind === "comunidades" && <div className="grid gap-3 md:grid-cols-2">{communities.data?.map(c => <CommunityTile community={c} key={c.id} />)}{communities.data?.length === 0 && <Empty />}</div>}</AppShell>;
 }
 export function CategoryPage({ slug }: { slug: string }) { const { articles, categories } = useCampusData(); const category = categories.data?.find(c => c.slug === slug); const filtered = articles.data?.filter(a => a.categories?.slug === slug); return <AppShell><PageHeading title={category?.name ?? "Categoria"} subtitle={category?.description ?? undefined} /><div className="grid gap-4 sm:grid-cols-2">{filtered?.map(a => <ArticleCard key={a.id} article={a} />)}{filtered?.length === 0 && <Empty />}</div></AppShell>; }
 export function ArticlePage({ slug }: { slug: string }) {
@@ -78,3 +79,116 @@ export function AdminPage() {
 }
 export function LegalPage({ kind }: { kind: "termos" | "privacidade" }) { return <AppShell><div className="mx-auto max-w-2xl"><PageHeading title={kind === "termos" ? "Termos de uso" : "Política de privacidade"} /><p className="text-sm leading-7 text-muted-foreground">O InfoCampus é um espaço de troca entre estudantes da comunidade acadêmica do IFMA. Respeite as outras pessoas, publique apenas conteúdo que você tem direito de compartilhar e não divulgue dados pessoais de terceiros.</p><p className="mt-4 text-sm leading-7 text-muted-foreground">As informações do seu perfil e as publicações são visíveis para outras pessoas. Mensagens privadas são acessíveis apenas às pessoas envolvidas. Para solicitar alteração ou exclusão de informações, entre em contato com a administração da comunidade.</p></div></AppShell>; }
 export function ResetPasswordPage() { const [email, setEmail] = useState(""); const [busy, setBusy] = useState(false); async function submit(e: FormEvent) { e.preventDefault(); setBusy(true); const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/entrar` }); setBusy(false); if (error) toast.error(error.message); else toast.success("Confira sua caixa de entrada para recuperar sua senha."); } return <AppShell><div className="mx-auto max-w-md"><PageHeading title="Recuperar senha" subtitle="Enviaremos um link para o seu e-mail institucional." /><form onSubmit={submit} className="space-y-4"><Label htmlFor="reset-email">E-mail institucional</Label><Input id="reset-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required /><Button type="submit" disabled={busy}>{busy ? "Enviando..." : "Enviar link"}</Button></form></div></AppShell>; }
+
+export function OpportunityPage({ id }: { id: string }) {
+  const { opportunities } = useCampusData();
+  const item = opportunities.data?.find(o => o.id === id);
+  const others = opportunities.data?.filter(o => o.id !== id).slice(0, 4) ?? [];
+
+  return (
+    <AppShell>
+      {!item ? (
+        <Empty text="Oportunidade não encontrada." />
+      ) : (
+        <article className="mx-auto max-w-3xl">
+          <div className="flex items-start justify-between gap-4 border-b border-border pb-5">
+            <div className="min-w-0">
+              <Link to="/oportunidades" className="text-xs font-extrabold uppercase tracking-wide text-secondary hover:underline">
+                {item.type}
+              </Link>
+              <h1 className="mt-2 text-2xl font-extrabold leading-tight text-foreground md:text-3xl">
+                {item.title}
+              </h1>
+            </div>
+            <Button asChild variant="ghost" size="icon" title="Voltar para oportunidades" className="shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+              <Link to="/oportunidades" aria-label="Voltar para oportunidades">
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+            {item.deadline && (
+              <p className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">Inscrições:</span>
+                <span>{item.period ? item.period : `Até ${dateLong(item.deadline)}`}</span>
+              </p>
+            )}
+            <p className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">Categoria:</span>
+              <span className="uppercase text-secondary font-bold">{item.type}</span>
+            </p>
+          </div>
+
+          <section className="mt-8">
+            <SectionHeading title="Sobre a oportunidade" />
+            <p className="whitespace-pre-line text-base leading-relaxed text-foreground">
+              {item.description}
+            </p>
+          </section>
+
+          {(item.edital_title || item.edital_url || (item.attachments && item.attachments.length > 0)) && (
+            <section className="mt-8 border-t border-border pt-6">
+              <SectionHeading title="Documentos e Anexos" />
+              <div className="space-y-3">
+                {item.edital_title && (
+                  <div className="flex items-center justify-between rounded-lg border border-border bg-card p-3.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-deep">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold truncate">{item.edital_title}</p>
+                        <p className="text-xs text-muted-foreground">Arquivo principal do edital</p>
+                      </div>
+                    </div>
+                    {item.edital_url && (
+                      <Button asChild size="sm" variant="outline" className="gap-1.5 shrink-0">
+                        <a href={safeUrl(item.edital_url) ?? "#"} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3.5 w-3.5" /> Acessar
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {item.attachments?.map((anexo, idx) => (
+                  <div key={idx} className="flex items-center justify-between rounded-lg border border-border bg-card p-3 text-sm">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate text-xs font-medium">{anexo.name}</span>
+                    </div>
+                    {anexo.url && (
+                      <a href={safeUrl(anexo.url) ?? "#"} target="_blank" rel="noopener noreferrer" className="shrink-0 text-xs font-semibold text-primary-deep hover:underline">
+                        Baixar
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {item.registration_url && (
+            <div className="mt-8 flex gap-3">
+              <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary-deep">
+                <a href={safeUrl(item.registration_url) ?? "#"} target="_blank" rel="noopener noreferrer">
+                  Acessar Inscrições <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          )}
+
+          {others.length > 0 && (
+            <section className="mt-12 border-t border-border pt-8">
+              <SectionHeading title="Outras oportunidades" to="/oportunidades" />
+              <div className="grid gap-4 md:grid-cols-2">
+                {others.map(o => <OpportunityTile item={o} key={o.id} />)}
+              </div>
+            </section>
+          )}
+        </article>
+      )}
+    </AppShell>
+  );
+}

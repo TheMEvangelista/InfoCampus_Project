@@ -27,6 +27,7 @@ import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ArtigoSlugRouteImport } from './routes/artigo.$slug'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
+import { Route as OportunidadeIdRouteImport } from './routes/oportunidade.$id'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 
 const IndexRoute = IndexRouteImport.update({
@@ -119,6 +120,11 @@ const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
   path: '/categoria/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OportunidadeIdRoute = OportunidadeIdRouteImport.update({
+  id: '/oportunidade/$id',
+  path: '/oportunidade/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
   id: '/perfil/$username',
   path: '/perfil/$username',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/oportunidade/$id': typeof OportunidadeIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesByTo {
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/oportunidade/$id': typeof OportunidadeIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesById {
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/oportunidade/$id': typeof OportunidadeIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRouteTypes {
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
+    | '/oportunidade/$id'
     | '/perfil/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
+    | '/oportunidade/$id'
     | '/perfil/$username'
   id:
     | '__root__'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
+    | '/oportunidade/$id'
     | '/perfil/$username'
   fileRoutesById: FileRoutesById
 }
@@ -274,6 +286,7 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   ArtigoSlugRoute: typeof ArtigoSlugRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
+  OportunidadeIdRoute: typeof OportunidadeIdRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
 }
 
@@ -405,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oportunidade/$id': {
+      id: '/oportunidade/$id'
+      path: '/oportunidade/$id'
+      fullPath: '/oportunidade/$id'
+      preLoaderRoute: typeof OportunidadeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfil/$username': {
       id: '/perfil/$username'
       path: '/perfil/$username'
@@ -434,6 +454,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   ArtigoSlugRoute: ArtigoSlugRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
+  OportunidadeIdRoute: OportunidadeIdRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
 }
 export const routeTree = rootRouteImport

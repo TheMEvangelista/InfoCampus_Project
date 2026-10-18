@@ -10,5 +10,10 @@ export const Route = createFileRoute("/artigo/$slug")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
-  component: () => <ArticlePage slug={Route.useParams().slug} />,
+  component: ArticleRoute,
 });
+
+function ArticleRoute() {
+  const { slug } = Route.useParams();
+  return <ArticlePage slug={slug} />;
+}
