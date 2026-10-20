@@ -9,6 +9,7 @@ import {
   Menu,
   MessageSquare,
   Newspaper,
+  PenSquare,
   Search,
   Settings,
   Shield,
@@ -171,8 +172,11 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
       return;
     }
     const articles = await supabase.from("articles").select("slug").eq("published", true).ilike("title", query).limit(2);
-    if (articles.data?.length === 1) navigate({ to: "/artigo/$slug", params: { slug: articles.data[0].slug } });
-    else toast.info("Nenhum perfil ou artigo correspondente foi encontrado.");
+    if (articles.data?.length === 1) {
+      navigate({ to: "/artigo/$slug", params: { slug: articles.data[0].slug } });
+    } else {
+      navigate({ to: "/buscar", search: { q: query, tipo: "artigos", pagina: 1 } });
+    }
     setMobileSearchOpen(false);
   }
 
@@ -279,6 +283,11 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem asChild>
+                    <Link to="/criar-artigo">
+                      <PenSquare className="mr-2 h-4 w-4" /> Escrever artigo
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/configuracoes">
                       <Settings className="mr-2 h-4 w-4" /> Configurações

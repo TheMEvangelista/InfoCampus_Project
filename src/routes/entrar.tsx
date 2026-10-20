@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,9 +31,15 @@ function EntrarPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  if (user) {
-    navigate({ to: "/", replace: true });
-  }
+  useEffect(() => {
+    if (user) {
+      if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
+        navigate({ to: "/redefinir-senha", replace: true });
+      } else {
+        navigate({ to: "/", replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
