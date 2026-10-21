@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { Empty, PageHeading } from "@/components/CampusContent";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/UI/button";
 import { LoginPrompt } from "./LoginPrompt";
 
 export function NotificationsPage() {

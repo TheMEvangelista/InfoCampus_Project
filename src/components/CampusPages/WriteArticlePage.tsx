@@ -8,10 +8,10 @@ import { content } from "@/lib/content";
 import { useAuth, useIsStaff, useProfile } from "@/lib/auth";
 import { isSafeHttpUrl } from "@/lib/url";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
+import { Label } from "@/components/UI/label";
+import { Textarea } from "@/components/UI/textarea";
 import { LoginPrompt } from "./LoginPrompt";
 
 export function WriteArticlePage() {

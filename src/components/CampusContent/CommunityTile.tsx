@@ -5,7 +5,7 @@ import { Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Community } from "@/lib/content";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/UI/button";
 
 export function CommunityTile({ community }: { community: Community }) {
   const [busy, setBusy] = useState(false);

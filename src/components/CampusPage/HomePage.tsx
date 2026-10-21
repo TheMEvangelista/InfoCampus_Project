@@ -12,7 +12,7 @@ import {
   SectionHeading,
 } from "@/components/CampusContent";
 import { dateLong } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/UI/button";
 import { useCampusData } from "@/hooks/useCampusData";
 
 import campusStudents from "@/assets/Images/Image-1.jpg";

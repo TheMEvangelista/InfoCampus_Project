@@ -5,10 +5,10 @@ import { KeyRound, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
+import { Label } from "@/components/UI/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/UI/card";
 
 export const Route = createFileRoute("/redefinir-senha")({
   head: () => ({

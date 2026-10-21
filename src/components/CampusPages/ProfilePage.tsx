@@ -6,7 +6,7 @@ import { useAuth, useProfile } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
 import { supabase } from "@/integrations/supabase/client";
 import { dateLong } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/UI/button";
 import { useCampusData } from "@/hooks/useCampusData";
 
 export function ProfilePage({ username }: { username: string }) {

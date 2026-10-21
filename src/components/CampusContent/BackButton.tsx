@@ -1,6 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/UI/button";
 
 type BackDestination =
   "/" | "/noticias" | "/eventos" | "/oportunidades" | "/comunidades" | "/mensagens";

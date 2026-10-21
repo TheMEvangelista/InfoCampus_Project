@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PageHeading } from "@/components/CampusContent/PageHeading";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
 import {
   normalizeKind,
   normalizePage,

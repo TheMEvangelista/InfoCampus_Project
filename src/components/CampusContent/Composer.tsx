@@ -18,11 +18,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/lib/auth";
 import { content } from "@/lib/content";
 import { isSafeHttpUrl, safeUrl } from "@/lib/url";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
+import { Textarea } from "@/components/UI/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/UI/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/UI/popover";
 
 export function Composer() {
   const { user } = useAuth();

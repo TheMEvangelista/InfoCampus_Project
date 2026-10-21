@@ -4,16 +4,16 @@ import { Bell, Menu, PenSquare, Search, Settings, User, X } from "lucide-react";
 import { useAuth, useProfile } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
 import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/UI/avatar";
+import { Badge } from "@/components/UI/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/UI/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { SidebarNav } from "./SidebarNav";
 import { useIsDesktop } from "./functions/useIsDesktop";

@@ -8,9 +8,9 @@ import { useAuth } from "@/lib/auth";
 import { content, Post } from "@/lib/content";
 import { timeAgo } from "@/lib/format";
 import { safeUrl } from "@/lib/url";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/UI/avatar";
 
 export function PostCard({ post }: { post: Post }) {
   const { user } = useAuth();

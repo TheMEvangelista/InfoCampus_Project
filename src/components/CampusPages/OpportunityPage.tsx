@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { BackButton, Empty, OpportunityTile, SectionHeading } from "@/components/CampusContent";
 import { safeUrl } from "@/lib/url";
 import { dateLong } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/UI/button";
 import { useCampusData } from "@/hooks/useCampusData";
 
 export function OpportunityPage({ id }: { id: string }) {

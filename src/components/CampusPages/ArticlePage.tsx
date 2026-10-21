@@ -10,9 +10,9 @@ import { useAuth } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
 import { supabase } from "@/integrations/supabase/client";
 import { dateLong } from "@/lib/format";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/UI/avatar";
 
 export function ArticlePage({ slug }: { slug: string }) {
   const { data: articles } = useQuery({ queryKey: ["articles"], queryFn: content.articles });

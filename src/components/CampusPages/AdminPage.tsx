@@ -6,7 +6,7 @@ import { content } from "@/lib/content";
 import { useAuth, useIsStaff } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { dateLong } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/UI/button";
 import { useCampusData } from "@/hooks/useCampusData";
 import { LoginPrompt } from "./LoginPrompt";
 
