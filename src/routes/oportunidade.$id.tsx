@@ -19,5 +19,3 @@ function OpportunityRoute() {
   const { id } = Route.useParams();
   return <OpportunityPage id={id} />;
 }
-
-

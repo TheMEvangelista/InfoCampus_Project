@@ -1,5 +1,5 @@
-import { MessagesPage } from "@/components/CampusPage/MessagesPage";
 import { createFileRoute } from "@tanstack/react-router";
+import { MessagesPage } from "@/components/CampusPage/MessagesPage";
 
 export const Route = createFileRoute("/mensagens")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -15,5 +15,5 @@ export const Route = createFileRoute("/mensagens")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: () => <MessagesPage />,
+  component: MessagesPage,
 });
