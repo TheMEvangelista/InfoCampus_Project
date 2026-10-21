@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LegalPage } from "@/components/CampusPages";
+import { LegalPage } from "@/components/CampusPages/LegalPage";
 
 export const Route = createFileRoute("/privacidade")({
   head: () => ({ meta: [

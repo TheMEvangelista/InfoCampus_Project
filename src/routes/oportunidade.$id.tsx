@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { OpportunityPage } from "@/components/CampusPages";
+import { OpportunityPage } from "@/components/CampusPages/OpportunityPage";
 
 export const Route = createFileRoute("/oportunidade/$id")({
   head: () => ({

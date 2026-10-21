@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ListingPage } from "@/components/CampusPages";
+import { ListingPage } from "@/components/CampusPages/ListingPage";
 
 export const Route = createFileRoute("/eventos")({
   head: () => ({ meta: [

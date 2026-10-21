@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { NotificationsPage } from "@/components/CampusPages";
+import { NotificationsPage } from "@/components/CampusPages/NotificationsPage";
 
 export const Route = createFileRoute("/notificacoes")({
   head: () => ({ meta: [

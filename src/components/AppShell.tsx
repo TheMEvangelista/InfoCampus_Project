@@ -18,7 +18,6 @@ import {
   X,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useIsStaff, useProfile } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
@@ -140,7 +139,6 @@ function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
           </button>
         </div>
       )}
-
     </nav>
   );
 }
@@ -159,21 +157,36 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
   async function openSearchResult() {
     const query = normalizeSearch(term);
     if (!query) return;
-    const exact = await supabase.from("profiles").select("username").ilike("username", query.replace(/^@/, "")).maybeSingle();
+    const exact = await supabase
+      .from("profiles")
+      .select("username")
+      .ilike("username", query.replace(/^@/, ""))
+      .maybeSingle();
     if (exact.data?.username) {
       navigate({ to: "/perfil/$username", params: { username: exact.data.username } });
       setMobileSearchOpen(false);
       return;
     }
-    const people = await supabase.from("profiles").select("username").ilike("full_name", query).limit(2);
-    if (people.data?.length === 1) {
-      navigate({ to: "/perfil/$username", params: { username: people.data[0].username } });
+    const people = await supabase
+      .from("profiles")
+      .select("username")
+      .ilike("full_name", query)
+      .limit(2);
+    const person = people.data?.[0];
+    if (people.data?.length === 1 && person?.username) {
+      navigate({ to: "/perfil/$username", params: { username: person.username } });
       setMobileSearchOpen(false);
       return;
     }
-    const articles = await supabase.from("articles").select("slug").eq("published", true).ilike("title", query).limit(2);
-    if (articles.data?.length === 1) {
-      navigate({ to: "/artigo/$slug", params: { slug: articles.data[0].slug } });
+    const articles = await supabase
+      .from("articles")
+      .select("slug")
+      .eq("published", true)
+      .ilike("title", query)
+      .limit(2);
+    const article = articles.data?.[0];
+    if (articles.data?.length === 1 && article?.slug) {
+      navigate({ to: "/artigo/$slug", params: { slug: article.slug } });
     } else {
       navigate({ to: "/buscar", search: { q: query, tipo: "artigos", pagina: 1 } });
     }
@@ -243,8 +256,23 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
           </form>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir pesquisa" aria-expanded={mobileSearchOpen} onClick={() => setMobileSearchOpen(open => !open)}><Search className="h-5 w-5" /></Button>
-            <Button asChild variant="ghost" size="icon" className="relative" aria-label="Notificações">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              aria-label="Abrir pesquisa"
+              aria-expanded={mobileSearchOpen}
+              onClick={() => setMobileSearchOpen((open) => !open)}
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="relative"
+              aria-label="Notificações"
+            >
               <Link to="/notificacoes">
                 <Bell className="h-5 w-5" />
                 {!!unread && (
@@ -302,7 +330,28 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             )}
           </div>
         </div>
-        {mobileSearchOpen && <form role="search" className="flex gap-2 border-t border-border px-3 py-3 md:hidden" onSubmit={e => { e.preventDefault(); void openSearchResult(); }}><Input autoFocus aria-label="Pesquisar no InfoCampus" maxLength={100} value={term} onChange={e => setTerm(e.target.value)} placeholder="Buscar pessoas ou artigos..." /><Button type="submit" aria-label="Pesquisar"><Search /></Button></form>}
+        {mobileSearchOpen && (
+          <form
+            role="search"
+            className="flex gap-2 border-t border-border px-3 py-3 md:hidden"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void openSearchResult();
+            }}
+          >
+            <Input
+              autoFocus
+              aria-label="Pesquisar no InfoCampus"
+              maxLength={100}
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+              placeholder="Buscar pessoas ou artigos..."
+            />
+            <Button type="submit" aria-label="Pesquisar">
+              <Search />
+            </Button>
+          </form>
+        )}
       </header>
 
       <div className="mx-auto flex max-w-[1600px] gap-5 px-3 py-6">

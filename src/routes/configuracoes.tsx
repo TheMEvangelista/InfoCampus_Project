@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SettingsPage } from "@/components/CampusPages";
+import { SettingsPage } from "@/components/CampusPages/SettingsPage";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({ meta: [

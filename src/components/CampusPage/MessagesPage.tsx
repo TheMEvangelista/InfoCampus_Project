@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/AppShell";
 import { BackButton, PageHeading } from "@/components/CampusContent";
-import { LoginPrompt } from "@/components/CampusPages";
+import { LoginPrompt } from "@/components/CampusPages/LoginPrompt";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +11,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { Send } from "lucide-react";
 import { useState, useEffect, useMemo, type SyntheticEvent } from "react";
-import { Button } from "react-day-picker";
-import { Label } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export function MessagesPage() {

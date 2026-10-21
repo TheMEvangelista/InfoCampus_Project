@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CategoryPage } from "@/components/CampusPages";
+import { CategoryPage } from "@/components/CampusPages/CategoryPage";
 
 export const Route = createFileRoute("/categoria/$slug")({
   head: () => ({ meta: [

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { WriteArticlePage } from "@/components/CampusPages";
+import { WriteArticlePage } from "@/components/CampusPages/WriteArticlePage";
 
 export const Route = createFileRoute("/criar-artigo")({
   head: () => ({ meta: [

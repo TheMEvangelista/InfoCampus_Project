@@ -3,7 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { PageHeading } from "@/components/CampusContent";
+import { PageHeading } from "@/components/CampusContent/PageHeading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

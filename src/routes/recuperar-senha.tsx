@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ResetPasswordPage } from "@/components/CampusPages";
+import { ResetPasswordPage } from "@/components/CampusPages/ResetPasswordPage";
 
 export const Route = createFileRoute("/recuperar-senha")({
   head: () => ({ meta: [
