@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Bell, Menu, PenSquare, Search, Settings, User, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
 import { Logo } from "@/components/Logo";
@@ -16,83 +15,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { normalizeSearch } from "@/lib/search";
 import { SidebarNav } from "./SidebarNav";
 import { useIsDesktop } from "./functions/useIsDesktop";
+import { useOpenSearchResult } from "./functions/useOpenSearchResult";
+import { useSidebarControls } from "./functions/useSidebarControls";
 import { useUnreadCount } from "./functions/useUnreadCount";
 
-let persistedMobileOpen = false;
-let persistedCollapsed = false;
-
 export function AppShell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(persistedMobileOpen);
-  const [collapsed, setCollapsed] = useState(persistedCollapsed);
   const [term, setTerm] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: unread } = useUnreadCount();
   const isDesktop = useIsDesktop();
-
-  async function openSearchResult() {
-    const query = normalizeSearch(term);
-    if (!query) return;
-    const exact = await supabase
-      .from("profiles")
-      .select("username")
-      .ilike("username", query.replace(/^@/, ""))
-      .maybeSingle();
-    if (exact.data?.username) {
-      navigate({ to: "/perfil/$username", params: { username: exact.data.username } });
-      setMobileSearchOpen(false);
-      return;
-    }
-    const people = await supabase
-      .from("profiles")
-      .select("username")
-      .ilike("full_name", query)
-      .limit(2);
-    const person = people.data?.[0];
-    if (people.data?.length === 1 && person?.username) {
-      navigate({ to: "/perfil/$username", params: { username: person.username } });
-      setMobileSearchOpen(false);
-      return;
-    }
-    const articles = await supabase
-      .from("articles")
-      .select("slug")
-      .eq("published", true)
-      .ilike("title", query)
-      .limit(2);
-    const article = articles.data?.[0];
-    if (articles.data?.length === 1 && article?.slug) {
-      navigate({ to: "/artigo/$slug", params: { slug: article.slug } });
-    } else {
-      navigate({ to: "/buscar", search: { q: query, tipo: "artigos", pagina: 1 } });
-    }
-    setMobileSearchOpen(false);
-  }
-
-  function toggleSidebar() {
-    if (isDesktop) {
-      setCollapsed((current) => {
-        persistedCollapsed = !current;
-        return persistedCollapsed;
-      });
-      return;
-    }
-
-    setMobileOpen((current) => {
-      persistedMobileOpen = !current;
-      return persistedMobileOpen;
-    });
-  }
-
-  function closeMobileSidebar() {
-    persistedMobileOpen = false;
-    setMobileOpen(false);
-  }
+  const { mobileOpen, collapsed, toggleSidebar, closeMobileSidebar } =
+    useSidebarControls(isDesktop);
+  const openSearchResult = useOpenSearchResult(term, () => setMobileSearchOpen(false));
 
   return (
     <div className="min-h-screen bg-background">
