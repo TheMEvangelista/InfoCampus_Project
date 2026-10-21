@@ -24,6 +24,7 @@ import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as OportunidadesRouteImport } from './routes/oportunidades'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ArtigoSlugRouteImport } from './routes/artigo.$slug'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
@@ -105,6 +106,11 @@ const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
   path: '/recuperar-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/oportunidades': typeof OportunidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/oportunidades': typeof OportunidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/oportunidades': typeof OportunidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/oportunidades'
     | '/privacidade'
     | '/recuperar-senha'
+    | '/redefinir-senha'
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/oportunidades'
     | '/privacidade'
     | '/recuperar-senha'
+    | '/redefinir-senha'
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/oportunidades'
     | '/privacidade'
     | '/recuperar-senha'
+    | '/redefinir-senha'
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   OportunidadesRoute: typeof OportunidadesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   TermosRoute: typeof TermosRoute
   ArtigoSlugRoute: typeof ArtigoSlugRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
@@ -397,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecuperarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/termos': {
       id: '/termos'
       path: '/termos'
@@ -451,6 +471,7 @@ const rootRouteChildren: RootRouteChildren = {
   OportunidadesRoute: OportunidadesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   TermosRoute: TermosRoute,
   ArtigoSlugRoute: ArtigoSlugRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
