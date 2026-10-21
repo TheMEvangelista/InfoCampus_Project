@@ -1,25 +1,8 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
-  Bell,
-  Briefcase,
-  CalendarDays,
-  Home,
-  LogOut,
-  Menu,
-  MessageSquare,
-  Newspaper,
-  PenSquare,
-  Search,
-  Settings,
-  Shield,
-  User,
-  Users,
-  X,
-} from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, type ReactNode } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Bell, Menu, PenSquare, Search, Settings, User, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, useIsStaff, useProfile } from "@/lib/auth";
+import { useAuth, useProfile } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -34,114 +17,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { normalizeSearch } from "@/lib/search";
-
-const navItems = [
-  { to: "/", label: "Início", icon: Home },
-  { to: "/noticias", label: "Notícias", icon: Newspaper },
-  { to: "/eventos", label: "Eventos", icon: CalendarDays },
-  { to: "/oportunidades", label: "Oportunidades", icon: Briefcase },
-  { to: "/comunidades", label: "Comunidades", icon: Users },
-  { to: "/mensagens", label: "Mensagens", icon: MessageSquare },
-] as const;
+import { SidebarNav } from "./SidebarNav";
+import { useIsDesktop } from "./functions/useIsDesktop";
+import { useUnreadCount } from "./functions/useUnreadCount";
 
 let persistedMobileOpen = false;
 let persistedCollapsed = false;
-
-function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(true);
-
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(query.matches);
-    const onChange = (event: MediaQueryListEvent) => setIsDesktop(event.matches);
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
-
-  return isDesktop;
-}
-
-function useUnreadCount() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["unread-notifications", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user!.id)
-        .eq("read", false);
-      return count ?? 0;
-    },
-  });
-}
-
-function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user } = useAuth();
-  const { data: isAdmin } = useIsStaff();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/entrar", replace: true });
-  }
-
-  return (
-    <nav className="flex h-full flex-col gap-1 p-3">
-      {navItems.map((item) => {
-        const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-        return (
-          <Link
-            key={item.to}
-            to={item.to}
-            title={collapsed ? item.label : undefined}
-            className={cn(
-              collapsed && "justify-center px-0",
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              active
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <item.icon className="h-4.5 w-4.5 shrink-0" />
-            {!collapsed && <span className="truncate">{item.label}</span>}
-          </Link>
-        );
-      })}
-
-      {isAdmin && (
-        <Link
-          to="/admin"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Shield className="h-4.5 w-4.5 shrink-0" />
-          {!collapsed && "Painel admin"}
-        </Link>
-      )}
-
-      {user && (
-        <div className="mt-auto pt-4">
-          <button
-            onClick={signOut}
-            title={collapsed ? "Sair da conta" : undefined}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-xl bg-secondary/10 px-3 py-2.5 text-sm font-semibold text-secondary transition-colors hover:bg-secondary/20",
-              collapsed && "justify-center px-0",
-            )}
-          >
-            <LogOut className="h-4.5 w-4.5 shrink-0" />
-            {!collapsed && "Sair da conta"}
-          </button>
-        </div>
-      )}
-    </nav>
-  );
-}
 
 export function AppShell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(persistedMobileOpen);
