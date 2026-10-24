@@ -64,8 +64,8 @@ function RedefinirSenhaPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (password.length < 6) {
-      return toast.error("A nova senha deve ter no mínimo 6 caracteres.");
+    if (password.length < 8) {
+      return toast.error("A nova senha deve ter no mínimo 8 caracteres.");
     }
     if (password !== confirmPassword) {
       return toast.error("As senhas não coincidem. Digite a mesma senha nos dois campos.");
@@ -151,9 +151,9 @@ function RedefinirSenhaPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo de 6 caracteres"
+                    placeholder="Mínimo de 8 caracteres"
                     required
-                    minLength={6}
+                    minLength={8}
                   />
                 </div>
 
@@ -166,7 +166,7 @@ function RedefinirSenhaPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repita a nova senha"
                     required
-                    minLength={6}
+                    minLength={8}
                   />
                 </div>
 

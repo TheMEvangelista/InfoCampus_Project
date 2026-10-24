@@ -335,6 +335,15 @@ export type Database = {
           },
         ]
       }
+      friend_requests: {
+        Row: { id: string; requester_id: string; recipient_id: string; status: string; created_at: string }
+        Insert: { id?: string; requester_id: string; recipient_id: string; status?: string; created_at?: string }
+        Update: { id?: string; requester_id?: string; recipient_id?: string; status?: string; created_at?: string }
+        Relationships: [
+          { foreignKeyName: "friend_requests_requester_id_fkey"; columns: ["requester_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "friend_requests_recipient_id_fkey"; columns: ["recipient_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -553,6 +562,9 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          course: string | null
+          cohort: string | null
+          gender: string | null
           created_at: string
           full_name: string
           id: string
@@ -562,6 +574,9 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          course?: string | null
+          cohort?: string | null
+          gender?: string | null
           created_at?: string
           full_name: string
           id: string
@@ -571,6 +586,9 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          course?: string | null
+          cohort?: string | null
+          gender?: string | null
           created_at?: string
           full_name?: string
           id?: string

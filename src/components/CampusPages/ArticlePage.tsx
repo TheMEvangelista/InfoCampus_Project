@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { Send } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { BackButton, Empty, SectionHeading, articleImage } from "@/components/CampusContent";
-import { content } from "@/lib/content";
 import { useAuth } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,9 +14,19 @@ import { Input } from "@/components/UI/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/UI/avatar";
 
 export function ArticlePage({ slug }: { slug: string }) {
-  const { data: articles } = useQuery({ queryKey: ["articles"], queryFn: content.articles });
-  const article = articles?.find((a) => a.slug === slug);
   const { user } = useAuth();
+  const { data: article } = useQuery({
+    queryKey: ["article", slug, user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id,slug,title,subtitle,content,cover_url,created_at,featured,tags,author_id,profiles!articles_author_id_fkey(id,username,full_name,avatar_url),categories(id,slug,name,description)")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
   const [comment, setComment] = useState("");
   const queryClient = useQueryClient();
   const { data: comments } = useQuery({
@@ -60,7 +69,7 @@ export function ArticlePage({ slug }: { slug: string }) {
           >
             {article.categories?.name}
           </Link>
-          <h1 className="mt-3 text-3xl font-extrabold leading-tight md:text-4xl">
+          <h1 className="mt-3 text-2xl font-extrabold leading-tight md:text-4xl">
             {article.title}
           </h1>
           <p className="mt-3 text-base text-muted-foreground">{article.subtitle}</p>

@@ -23,7 +23,13 @@ const navItems = [
   { to: "/mensagens", label: "Mensagens", icon: MessageSquare },
 ] as const;
 
-export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
+export function SidebarNav({
+  collapsed = false,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
   const { data: isAdmin } = useIsStaff();
@@ -45,6 +51,7 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
           <Link
             key={item.to}
             to={item.to}
+            onClick={onNavigate}
             title={collapsed ? item.label : undefined}
             className={cn(
               collapsed && "justify-center px-0",
@@ -63,6 +70,7 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
       {isAdmin && (
         <Link
           to="/admin"
+          onClick={onNavigate}
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Shield className="h-4.5 w-4.5 shrink-0" />

@@ -1,7 +1,9 @@
 import { useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { Bell, Menu, PenSquare, Search, Settings, User, X } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Bell, ChevronDown, LogOut, Menu, Search, Settings, UserRound, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useProfile } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { safeUrl } from "@/lib/url";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/UI/button";
@@ -12,6 +14,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/UI/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -24,13 +28,22 @@ import { useUnreadCount } from "./functions/useUnreadCount";
 export function AppShell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   const [term, setTerm] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: profile } = useProfile();
   const { data: unread } = useUnreadCount();
   const isDesktop = useIsDesktop();
-  const { mobileOpen, collapsed, toggleSidebar, closeMobileSidebar } =
+  const { mobileOpen, collapsed, toggleSidebar, closeMobileSidebar, collapseSidebar } =
     useSidebarControls(isDesktop);
   const openSearchResult = useOpenSearchResult(term, () => setMobileSearchOpen(false));
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/entrar", replace: true });
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,7 +80,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             <Input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
-              placeholder="Buscar perfil ou artigo pelo título..."
+              placeholder="Buscar pessoas, artigos ou comunidades..."
               aria-label="Buscar no InfoCampus"
               maxLength={100}
               className="rounded-full bg-muted pl-9"
@@ -103,42 +116,62 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             </Button>
 
             {user ? (
-              <DropdownMenu>
+              <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-2xl border border-border bg-card px-2 py-1.5 text-left transition-colors hover:bg-muted">
-                    <Avatar className="h-8 w-8">
+                  <button
+                    aria-label="Abrir menu do perfil"
+                    className="group flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Avatar className="h-9 w-9 ring-2 ring-transparent transition-all group-hover:ring-primary/50 group-data-[state=open]:ring-primary">
                       <AvatarImage src={safeUrl(profile?.avatar_url) ?? undefined} alt="" />
                       <AvatarFallback>
                         {(profile?.full_name ?? "?").slice(0, 1).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="hidden min-w-0 flex-col sm:flex">
-                      <span className="truncate text-xs font-semibold">
-                        {profile?.full_name ?? "Estudante"}
-                      </span>
-                      <span className="truncate text-[11px] text-muted-foreground">
-                        @{profile?.username ?? "perfil"}
-                      </span>
-                    </span>
+                    <ChevronDown
+                      className={`mr-1 h-4 w-4 text-muted-foreground transition-all duration-200 group-hover:text-primary ${profileMenuOpen ? "rotate-180 text-primary" : "rotate-0"}`}
+                      aria-hidden="true"
+                    />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuContent align="end" className="w-72 rounded-2xl p-2">
+                  <DropdownMenuLabel className="flex items-center gap-3 rounded-xl border border-border p-3 font-normal">
+                    <Avatar className="h-11 w-11">
+                      <AvatarImage src={safeUrl(profile?.avatar_url) ?? undefined} alt="" />
+                      <AvatarFallback>
+                        {(profile?.full_name ?? "?").slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold text-foreground">
+                        {profile?.full_name ?? "Estudante"}
+                      </span>
+                      <span className="block truncate text-xs font-normal text-muted-foreground">
+                        {user.email}
+                      </span>
+                    </span>
+                  </DropdownMenuLabel>
                   {profile && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="mt-1.5">
                       <Link to="/perfil/$username" params={{ username: profile.username }}>
-                        <User className="mr-2 h-4 w-4" /> Meu perfil
+                        <UserRound className="mr-2 h-4 w-4" /> Perfil
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link to="/criar-artigo">
-                      <PenSquare className="mr-2 h-4 w-4" /> Escrever artigo
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem asChild className="mt-1">
                     <Link to="/configuracoes">
                       <Settings className="mr-2 h-4 w-4" /> Configurações
                     </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-2" />
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      void signOut();
+                    }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" /> Sair da conta
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -187,7 +220,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             )}
           >
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <SidebarNav collapsed={collapsed} />
+              <SidebarNav collapsed={collapsed} onNavigate={collapseSidebar} />
             </div>
           </aside>
         </div>
@@ -215,7 +248,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
             )}
           >
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <SidebarNav />
+              <SidebarNav onNavigate={collapseSidebar} />
             </div>
           </div>
         </div>

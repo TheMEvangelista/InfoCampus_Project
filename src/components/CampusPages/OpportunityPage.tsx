@@ -34,7 +34,7 @@ export function OpportunityPage({ id }: { id: string }) {
               >
                 {item.type}
               </Link>
-              <h1 className="mt-2 text-2xl font-extrabold leading-tight text-foreground md:text-3xl">
+              <h1 className="mt-2 text-xl font-extrabold leading-tight text-foreground md:text-3xl">
                 {item.title}
               </h1>
             </div>

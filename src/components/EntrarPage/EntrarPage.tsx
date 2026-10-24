@@ -91,7 +91,7 @@ export function EntrarPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Senha</Label>
-                    <Input id="signup-password" name="password" type="password" required />
+                    <Input id="signup-password" name="password" type="password" minLength={8} required />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Criando..." : "Criar conta"}

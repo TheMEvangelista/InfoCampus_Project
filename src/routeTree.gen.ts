@@ -16,6 +16,7 @@ import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as CriarArtigoRouteImport } from './routes/criar-artigo'
+import { Route as EditarPerfilRouteImport } from './routes/editar-perfil'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as MensagensRouteImport } from './routes/mensagens'
@@ -64,6 +65,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
 const CriarArtigoRoute = CriarArtigoRouteImport.update({
   id: '/criar-artigo',
   path: '/criar-artigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditarPerfilRoute = EditarPerfilRouteImport.update({
+  id: '/editar-perfil',
+  path: '/editar-perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntrarRoute = EntrarRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/comunidades': typeof ComunidadesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/criar-artigo': typeof CriarArtigoRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/mensagens': typeof MensagensRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/comunidades': typeof ComunidadesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/criar-artigo': typeof CriarArtigoRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/mensagens': typeof MensagensRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/comunidades': typeof ComunidadesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/criar-artigo': typeof CriarArtigoRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/mensagens': typeof MensagensRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/comunidades'
     | '/configuracoes'
     | '/criar-artigo'
+    | '/editar-perfil'
     | '/entrar'
     | '/eventos'
     | '/mensagens'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/comunidades'
     | '/configuracoes'
     | '/criar-artigo'
+    | '/editar-perfil'
     | '/entrar'
     | '/eventos'
     | '/mensagens'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/comunidades'
     | '/configuracoes'
     | '/criar-artigo'
+    | '/editar-perfil'
     | '/entrar'
     | '/eventos'
     | '/mensagens'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   ComunidadesRoute: typeof ComunidadesRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   CriarArtigoRoute: typeof CriarArtigoRoute
+  EditarPerfilRoute: typeof EditarPerfilRoute
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
   MensagensRoute: typeof MensagensRoute
@@ -352,6 +365,13 @@ declare module '@tanstack/react-router' {
       path: '/criar-artigo'
       fullPath: '/criar-artigo'
       preLoaderRoute: typeof CriarArtigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/editar-perfil': {
+      id: '/editar-perfil'
+      path: '/editar-perfil'
+      fullPath: '/editar-perfil'
+      preLoaderRoute: typeof EditarPerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entrar': {
@@ -463,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComunidadesRoute: ComunidadesRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   CriarArtigoRoute: CriarArtigoRoute,
+  EditarPerfilRoute: EditarPerfilRoute,
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
   MensagensRoute: MensagensRoute,

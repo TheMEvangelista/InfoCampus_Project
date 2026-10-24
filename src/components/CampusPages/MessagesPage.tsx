@@ -10,10 +10,12 @@ import { safeUrl } from "@/lib/url";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { Send } from "lucide-react";
-import { useState, useEffect, useMemo, type SyntheticEvent } from "react";
+import { useState, useEffect, useMemo, useRef, type SyntheticEvent } from "react";
 import { Button } from "@/components/UI/button";
 import { Label } from "@/components/UI/label";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/UI/checkbox";
+import { CheckCheck } from "lucide-react";
 
 export function MessagesPage() {
   const { user } = useAuth();
@@ -25,6 +27,8 @@ export function MessagesPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [lastSentAt, setLastSentAt] = useState(0);
+  const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(() => new Set());
+  const skipAutoReadFor = useRef<string | null>(null);
   const queryClient = useQueryClient();
   const {
     data: messages,
@@ -123,10 +127,15 @@ export function MessagesPage() {
   // ✏️ ALTERAÇÃO 4: a conversa padrão agora é a mais recente (topo da lista),
   // e não mais a primeira inserida em `conversations`
   const selected = activeId ?? sortedConversations[0]?.id ?? null;
+  useEffect(() => {
+    setSelectedMessageIds(new Set());
+  }, [selected]);
 
   const currentMessages = selected ? (conversations[selected] ?? []) : [];
   useEffect(() => {
     if (!user || !selected) return;
+    if (skipAutoReadFor.current === selected) return;
+    if (skipAutoReadFor.current) skipAutoReadFor.current = null;
     const unreadIds = (conversations[selected] ?? [])
       .filter((m) => m.recipient_id === user.id && !m.read)
       .map((m) => m.id);
@@ -141,6 +150,35 @@ export function MessagesPage() {
     // ✏️ ALTERAÇÃO 5: removidos "messages" e "user?.id" (redundantes).
     // `conversations` já muda quando `messages` muda.
   }, [selected, user, conversations, queryClient]);
+
+  const selectableMessages = currentMessages.filter((message) => message.recipient_id === user?.id);
+  const allMessagesSelected = selectableMessages.length > 0 && selectableMessages.every((message) => selectedMessageIds.has(message.id));
+  function toggleMessage(id: string, checked: boolean) {
+    setSelectedMessageIds((current) => {
+      const next = new Set(current);
+      if (checked) next.add(id); else next.delete(id);
+      return next;
+    });
+  }
+  function toggleAllMessages(checked: boolean) {
+    setSelectedMessageIds((current) => {
+      const next = new Set(current);
+      for (const message of selectableMessages) { if (checked) next.add(message.id); else next.delete(message.id); }
+      return next;
+    });
+  }
+  async function markSelectedUnread() {
+    if (!user || !selected) return;
+    const ids = [...selectedMessageIds];
+    if (!ids.length) return;
+    const { error } = await supabase.from("messages").update({ read: false }).eq("recipient_id", user.id).in("id", ids);
+    if (error) return toast.error("Não foi possível marcar as mensagens como não lidas.", { description: error.message });
+    skipAutoReadFor.current = selected;
+    setSelectedMessageIds(new Set());
+    toast.success(ids.length === 1 ? "Mensagem marcada como não lida." : "Mensagens marcadas como não lidas.");
+    await queryClient.invalidateQueries({ queryKey: ["messages", user.id] });
+    if (skipAutoReadFor.current === selected) skipAutoReadFor.current = null;
+  }
 
   // ✏️ ALTERAÇÃO 6: tipo correto do evento de submit do React
   async function send(e: SyntheticEvent<HTMLFormElement>) {
@@ -261,20 +299,34 @@ export function MessagesPage() {
                   @{peopleById.get(selected)?.username}
                 </p>
               )}
+              {selected && selectableMessages.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <Checkbox checked={allMessagesSelected} onCheckedChange={(checked) => toggleAllMessages(checked === true)} aria-label="Selecionar todas as mensagens recebidas" />
+                    Selecionar todas as recebidas
+                  </label>
+                  <Button size="sm" variant="outline" disabled={selectedMessageIds.size === 0} onClick={() => void markSelectedUnread()}>
+                    <CheckCheck className="h-4 w-4" /> Marcar como não lidas{selectedMessageIds.size ? ` (${selectedMessageIds.size})` : ""}
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
               {currentMessages.map((m) => (
                 <div
                   key={m.id}
-                  className={`max-w-[85%] rounded-xl p-3 text-sm ${m.sender_id === user.id ? "ml-auto bg-primary text-primary-foreground" : "bg-muted"}`}
+                  className={`flex items-center gap-2 ${m.sender_id === user.id ? "justify-end" : ""}`}
                 >
-                  <p className="whitespace-pre-wrap">{m.content}</p>
-                  <p className="mt-1 text-right text-[10px] opacity-70">
-                    {new Date(m.created_at).toLocaleString("pt-BR", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </p>
+                  {m.recipient_id === user.id && <Checkbox checked={selectedMessageIds.has(m.id)} onCheckedChange={(checked) => toggleMessage(m.id, checked === true)} aria-label="Selecionar mensagem recebida" />}
+                  <div className={`max-w-[85%] rounded-xl p-3 text-sm ${m.sender_id === user.id ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    <p className="whitespace-pre-wrap">{m.content}</p>
+                    <p className="mt-1 text-right text-[10px] opacity-70">
+                      {new Date(m.created_at).toLocaleString("pt-BR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

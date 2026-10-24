@@ -19,6 +19,9 @@ export type Profile = {
   full_name: string;
   avatar_url: string | null;
   bio: string | null;
+  course: string | null;
+  cohort: string | null;
+  gender: string | null;
   links: unknown;
   created_at: string;
 };

@@ -31,7 +31,7 @@ export function useHandleSignup(setLoading: Dispatch<SetStateAction<boolean>>) {
     }
     if (fullName.length < 3) return toast.error("Informe seu nome completo.");
     if (username.length < 3) return toast.error("Escolha um nome de usuário com 3+ caracteres.");
-    if (password.length < 6) return toast.error("A senha precisa ter ao menos 6 caracteres.");
+    if (password.length < 8) return toast.error("A senha precisa ter ao menos 8 caracteres.");
     if (avatarUrl && !isSafeHttpUrl(avatarUrl)) {
       return toast.error("Link da foto inválido", {
         description: "Use um endereço que comece com http:// ou https://.",

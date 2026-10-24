@@ -27,5 +27,11 @@ export function useSidebarControls(isDesktop: boolean) {
     setMobileOpen(false);
   }
 
-  return { mobileOpen, collapsed, toggleSidebar, closeMobileSidebar };
+  function collapseSidebar() {
+    persistedCollapsed = true;
+    setCollapsed(true);
+    closeMobileSidebar();
+  }
+
+  return { mobileOpen, collapsed, toggleSidebar, closeMobileSidebar, collapseSidebar };
 }

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MessagesPage } from "@/components/CampusPage/MessagesPage";
+import { MessagesPage } from "@/components/CampusPages/MessagesPage";
 
 export const Route = createFileRoute("/mensagens")({
   validateSearch: (search: Record<string, unknown>) => ({

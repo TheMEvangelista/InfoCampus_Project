@@ -1,4 +1,4 @@
-import { useRef, useState, DragEvent, FormEvent } from "react";
+import { useRef, useState, DragEvent, SubmitEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -113,7 +113,7 @@ export function Composer() {
     void uploadFile(event.dataTransfer.files[0]);
   }
 
-  async function submit(e: FormEvent) {
+  async function submit(e: SubmitEvent) {
     e.preventDefault();
     if (!user) return toast.error("Entre na sua conta para publicar.");
     if (!text.trim()) return toast.error("Escreva sua publicação.");
@@ -285,7 +285,7 @@ export function Composer() {
               disabled={uploadBusy}
               onClick={() => selectMediaType("image_url")}
             >
-              <ImagePlus /> <span className="hidden sm:inline">Imagem</span>
+              <ImagePlus /> <span>Imagem</span>
             </Button>
             <Button
               type="button"
@@ -294,7 +294,7 @@ export function Composer() {
               disabled={uploadBusy}
               onClick={() => selectMediaType("video_url")}
             >
-              <Video /> <span className="hidden sm:inline">Vídeo</span>
+              <Video /> <span>Vídeo</span>
             </Button>
           </div>
           <Popover open={destinationOpen} onOpenChange={setDestinationOpen}>

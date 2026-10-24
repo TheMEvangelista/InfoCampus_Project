@@ -73,20 +73,18 @@ export function PostCard({ post }: { post: Post }) {
     }
   }
   return (
-    <article className="rounded-md border border-border bg-card p-5 shadow-card">
+    <article id={`post-${post.id}`} className="rounded-md border border-border bg-card p-5 shadow-card">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10">
           <AvatarImage src={safeUrl(post.profiles?.avatar_url) ?? undefined} />
           <AvatarFallback>{post.profiles?.full_name?.charAt(0) ?? "I"}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <Link
-            to="/perfil/$username"
-            params={{ username: post.profiles?.username ?? "" }}
-            className="text-sm font-bold hover:text-primary-deep"
-          >
-            {post.profiles?.full_name ?? "Estudante"}
-          </Link>
+          {post.profiles?.username ? (
+            <Link to="/perfil/$username" params={{ username: post.profiles.username }} className="text-sm font-bold hover:text-primary-deep">
+              {post.profiles.full_name ?? "Estudante"}
+            </Link>
+          ) : <span className="text-sm font-bold">{post.profiles?.full_name ?? "Estudante"}</span>}
           <p className="text-xs text-muted-foreground">
             @{post.profiles?.username} · {timeAgo(post.created_at)}
             {post.communities && <> · {post.communities.name}</>}
@@ -146,7 +144,10 @@ export function PostCard({ post }: { post: Post }) {
           variant="ghost"
           size="icon"
           onClick={async () => {
-            await navigator.clipboard.writeText(window.location.href);
+            const postUrl = new URL(window.location.href);
+            postUrl.searchParams.set("publicacao", post.id);
+            postUrl.hash = `post-${post.id}`;
+            await navigator.clipboard.writeText(postUrl.toString());
             toast.success("Link copiado!");
           }}
           aria-label="Compartilhar"
