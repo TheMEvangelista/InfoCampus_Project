@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ListingPage } from "@/components/CampusPages/ListingPage";
+import { EventsPage } from "@/components/CampusPages/EventsPage";
 
 export const Route = createFileRoute("/eventos")({
   head: () => ({
@@ -12,5 +12,5 @@ export const Route = createFileRoute("/eventos")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: () => <ListingPage kind="eventos" />,
+  component: EventsPage,
 });

@@ -1,24 +1,25 @@
 import { AppShell } from "@/components/AppShell";
 import { BackButton, PageHeading } from "@/components/CampusContent";
 import { LoginPrompt } from "@/components/CampusPages/LoginPrompt";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/UI/avatar";
+import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
 import { Textarea } from "@/components/UI/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
-import { dateLong } from "@/lib/format";
+import { useAuth, useProfile } from "@/lib/auth";
 import { safeUrl } from "@/lib/url";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
-import { Send } from "lucide-react";
-import { useState, useEffect, useMemo, useRef, type SyntheticEvent } from "react";
-import { Button } from "@/components/UI/button";
-import { Label } from "@/components/UI/label";
+import { ArrowLeft, Heart, Send, Star } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Checkbox } from "@/components/UI/checkbox";
-import { CheckCheck } from "lucide-react";
+
+type Person = { id: string; username: string; full_name: string; avatar_url: string | null };
+const FAVORITES_LIMIT = 3;
 
 export function MessagesPage() {
   const { user } = useAuth();
+  const { data: profile } = useProfile();
   const routeSearch = useRouterState({ select: (state) => state.location.search }) as {
     para?: string;
   };
@@ -26,10 +27,22 @@ export function MessagesPage() {
   const [text, setText] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [lastSentAt, setLastSentAt] = useState(0);
-  const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(() => new Set());
-  const skipAutoReadFor = useRef<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [mobileThreadOpen, setMobileThreadOpen] = useState(false);
+  const lastSentAt = useRef(0);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const value = localStorage.getItem(`message-favorites:${user.id}`);
+      setFavorites(value ? (JSON.parse(value) as string[]).slice(0, FAVORITES_LIMIT) : []);
+    } catch {
+      setFavorites([]);
+    }
+  }, [user]);
+
   const {
     data: messages,
     isLoading,
@@ -61,15 +74,16 @@ export function MessagesPage() {
           messages!.flatMap((m) => [m.sender_id, m.recipient_id]).filter((id) => id !== user!.id),
         ),
       ];
-      if (!ids.length) return [];
+      if (!ids.length) return [] as Person[];
       const { data, error } = await supabase
         .from("profiles")
         .select("id,username,full_name,avatar_url")
         .in("id", ids);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as Person[];
     },
   });
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -77,21 +91,15 @@ export function MessagesPage() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` },
-        () => {
-          void queryClient.invalidateQueries({ queryKey: ["messages", user.id] });
-        },
+        () => void queryClient.invalidateQueries({ queryKey: ["messages", user.id] }),
       )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
-    // ✏️ ALTERAÇÃO 5: removido "user?.id" duplicado (já existe "user")
   }, [queryClient, user]);
 
-  // ✏️ ALTERAÇÃO 2: tipo da mensagem + agrupamento com useMemo
-  // (substitui o antigo `reduce`)
   type Message = NonNullable<typeof messages>[number];
-
   const conversations = useMemo(() => {
     const groups: Record<string, Message[]> = {};
     for (const message of messages ?? []) {
@@ -100,9 +108,6 @@ export function MessagesPage() {
     }
     return groups;
   }, [messages, user?.id]);
-
-  // ✏️ ALTERAÇÃO 3: lista pronta e ordenada, com `last` já garantido.
-  // O flatMap descarta conversas vazias e prova ao TypeScript que `last` existe.
   const sortedConversations = useMemo(
     () =>
       Object.entries(conversations)
@@ -110,32 +115,40 @@ export function MessagesPage() {
           const last = list[list.length - 1];
           return last ? [{ id, list, last }] : [];
         })
-        .sort((a, b) => b.last.created_at.localeCompare(a.last.created_at)),
-    [conversations],
+        .sort(
+          (a, b) =>
+            Number(favorites.includes(b.id)) - Number(favorites.includes(a.id)) ||
+            b.last.created_at.localeCompare(a.last.created_at),
+        ),
+    [conversations, favorites],
   );
-
   const peopleById = new Map((people ?? []).map((person) => [person.id, person]));
+  const selected = activeId ?? sortedConversations[0]?.id ?? null;
+  const currentMessages = selected ? (conversations[selected] ?? []) : [];
+  const visibleConversations = sortedConversations.filter(({ id }) => {
+    const person = peopleById.get(id);
+    const term = search.trim().toLocaleLowerCase("pt-BR");
+    return (
+      !term ||
+      person?.full_name.toLocaleLowerCase("pt-BR").includes(term) ||
+      person?.username.toLocaleLowerCase("pt-BR").includes(term)
+    );
+  });
+
   useEffect(() => {
     if (!routeSearch.para || !people) return;
     const requested = people.find(
       (person) =>
         person.username.toLowerCase() === routeSearch.para!.replace(/^@/, "").toLowerCase(),
     );
-    if (requested) setActiveId(requested.id);
+    if (requested) {
+      setActiveId(requested.id);
+      setMobileThreadOpen(true);
+    }
   }, [routeSearch.para, people]);
 
-  // ✏️ ALTERAÇÃO 4: a conversa padrão agora é a mais recente (topo da lista),
-  // e não mais a primeira inserida em `conversations`
-  const selected = activeId ?? sortedConversations[0]?.id ?? null;
-  useEffect(() => {
-    setSelectedMessageIds(new Set());
-  }, [selected]);
-
-  const currentMessages = selected ? (conversations[selected] ?? []) : [];
   useEffect(() => {
     if (!user || !selected) return;
-    if (skipAutoReadFor.current === selected) return;
-    if (skipAutoReadFor.current) skipAutoReadFor.current = null;
     const unreadIds = (conversations[selected] ?? [])
       .filter((m) => m.recipient_id === user.id && !m.read)
       .map((m) => m.id);
@@ -147,62 +160,42 @@ export function MessagesPage() {
       .then(({ error }) => {
         if (!error) void queryClient.invalidateQueries({ queryKey: ["messages", user.id] });
       });
-    // ✏️ ALTERAÇÃO 5: removidos "messages" e "user?.id" (redundantes).
-    // `conversations` já muda quando `messages` muda.
   }, [selected, user, conversations, queryClient]);
 
-  const selectableMessages = currentMessages.filter((message) => message.recipient_id === user?.id);
-  const allMessagesSelected = selectableMessages.length > 0 && selectableMessages.every((message) => selectedMessageIds.has(message.id));
-  function toggleMessage(id: string, checked: boolean) {
-    setSelectedMessageIds((current) => {
-      const next = new Set(current);
-      if (checked) next.add(id); else next.delete(id);
-      return next;
-    });
-  }
-  function toggleAllMessages(checked: boolean) {
-    setSelectedMessageIds((current) => {
-      const next = new Set(current);
-      for (const message of selectableMessages) { if (checked) next.add(message.id); else next.delete(message.id); }
-      return next;
-    });
-  }
-  async function markSelectedUnread() {
-    if (!user || !selected) return;
-    const ids = [...selectedMessageIds];
-    if (!ids.length) return;
-    const { error } = await supabase.from("messages").update({ read: false }).eq("recipient_id", user.id).in("id", ids);
-    if (error) return toast.error("Não foi possível marcar as mensagens como não lidas.", { description: error.message });
-    skipAutoReadFor.current = selected;
-    setSelectedMessageIds(new Set());
-    toast.success(ids.length === 1 ? "Mensagem marcada como não lida." : "Mensagens marcadas como não lidas.");
-    await queryClient.invalidateQueries({ queryKey: ["messages", user.id] });
-    if (skipAutoReadFor.current === selected) skipAutoReadFor.current = null;
+  function toggleFavorite(id: string) {
+    const next = favorites.includes(id)
+      ? favorites.filter((favorite) => favorite !== id)
+      : [...favorites, id];
+    if (next.length > FAVORITES_LIMIT)
+      return toast.error("Você pode favoritar apenas 3 conversas");
+    setFavorites(next);
+    if (user) localStorage.setItem(`message-favorites:${user.id}`, JSON.stringify(next));
+    toast.success(
+      next.includes(id) ? "Perfil adicionado aos favoritos." : "Perfil removido dos favoritos.",
+    );
   }
 
-  // ✏️ ALTERAÇÃO 6: tipo correto do evento de submit do React
-  async function send(e: SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function send(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (!user) return;
-    const contentText = text.trim();
-    if (!contentText) return toast.error("Escreva uma mensagem.");
-    if (contentText.length > 2000)
-      return toast.error("A mensagem pode ter no máximo 2000 caracteres.");
-    if (Date.now() - lastSentAt < 1500)
+    const content = text.trim();
+    if (!content) return toast.error("Escreva uma mensagem.");
+    if (content.length > 2000) return toast.error("A mensagem pode ter no máximo 2000 caracteres.");
+    if (Date.now() - lastSentAt.current < 1500)
       return toast.error("Aguarde um instante antes de enviar outra mensagem.");
     setBusy(true);
     let targetId = selected;
     if (recipient.trim()) {
-      const { data: profile, error } = await supabase
+      const { data: target, error } = await supabase
         .from("profiles")
         .select("id")
         .eq("username", recipient.replace(/^@/, "").trim())
         .maybeSingle();
-      if (error || !profile) {
+      if (error || !target) {
         setBusy(false);
         return toast.error("Usuário não encontrado.");
       }
-      targetId = profile.id;
+      targetId = target.id;
     }
     if (!targetId || targetId === user.id) {
       setBusy(false);
@@ -210,159 +203,275 @@ export function MessagesPage() {
     }
     const { error } = await supabase
       .from("messages")
-      .insert({ sender_id: user.id, recipient_id: targetId, content: contentText });
+      .insert({ sender_id: user.id, recipient_id: targetId, content });
     setBusy(false);
-    if (error) toast.error("Não foi possível enviar a mensagem.", { description: error.message });
-    else {
-      setLastSentAt(Date.now());
-      setText("");
-      setRecipient("");
-      setActiveId(targetId);
-      toast.success("Mensagem enviada.");
-      void queryClient.invalidateQueries({ queryKey: ["messages", user.id] });
-    }
+    if (error)
+      return toast.error("Não foi possível enviar a mensagem.", { description: error.message });
+    lastSentAt.current = Date.now();
+    setText("");
+    setRecipient("");
+    setActiveId(targetId);
+    setMobileThreadOpen(true);
+    void queryClient.invalidateQueries({ queryKey: ["messages", user.id] });
   }
+
   return (
-    <AppShell>
-      <BackButton fallbackTo="/" />
-      <PageHeading title="Mensagens" subtitle="Suas conversas privadas com pessoas do campus." />
-      {!user ? (
-        <LoginPrompt />
-      ) : (
-        <div className="grid gap-5 md:grid-cols-[280px_1fr]">
-          <section className="overflow-hidden rounded-xl border border-border bg-card">
-            <h2 className="border-b border-border p-4 font-bold">Conversas</h2>
-            {isLoading ? (
-              // ✏️ ALTERAÇÃO 7: encoding corrigido ("â€¦" virou "…")
-              <p className="p-4 text-sm text-muted-foreground">Carregando conversas…</p>
-            ) : isError ? (
-              <p className="p-4 text-sm text-destructive">
-                Não foi possível carregar suas conversas.
-              </p>
-            ) : // ✏️ ALTERAÇÃO 8: checa a lista ordenada em vez de Object.keys(...)
-            sortedConversations.length === 0 ? (
-              <p className="p-4 text-sm text-muted-foreground">Você ainda não tem conversas.</p>
-            ) : (
-              // ✏️ ALTERAÇÃO 9: o .map agora usa a lista pronta.
-              // Sem Object.entries/.sort aqui, sem `!`, e sem calcular `last`.
-              sortedConversations.map(({ id, list, last }) => {
-                const person = peopleById.get(id);
-                const unread = list.some((m) => m.recipient_id === user.id && !m.read);
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setActiveId(id)}
-                    className={`flex w-full items-center gap-3 border-b border-border p-4 text-left hover:bg-muted ${selected === id ? "bg-muted" : ""}`}
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft font-bold text-primary-deep">
-                      {safeUrl(person?.avatar_url) ? (
-                        <img
-                          src={safeUrl(person?.avatar_url)!}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        (person?.full_name?.[0] ?? "?")
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex justify-between gap-2">
-                        <strong className="truncate text-sm">
-                          {person?.full_name ?? "Estudante"}
-                        </strong>
-                        {unread && (
-                          <span
-                            className="h-2 w-2 shrink-0 rounded-full bg-primary"
-                            aria-label="Não lida"
+    <AppShell immersive>
+      <div className="flex h-full min-h-0 flex-col px-3 md:px-0">
+        <div className="shrink-0 pt-4">
+          <BackButton fallbackTo="/" />
+          <PageHeading
+            title="Mensagens"
+            subtitle="Suas conversas privadas com pessoas do campus."
+          />
+        </div>
+        {!user ? (
+          <div className="grid min-h-0 flex-1 place-items-center p-6">
+            <LoginPrompt />
+          </div>
+        ) : (
+          <main className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden pb-4 md:grid-cols-[300px_minmax(0,1fr)]">
+            <aside
+              className={`${mobileThreadOpen ? "hidden md:flex" : "flex"} min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card`}
+            >
+              <div className="flex items-center gap-3 border-b border-border px-5 py-5">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={safeUrl(profile?.avatar_url) ?? undefined} />
+                  <AvatarFallback>{profile?.full_name?.slice(0, 1) ?? "?"}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{profile?.full_name ?? "Mensagens"}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {profile ? `@${profile.username}` : "Suas conversas"}
+                  </p>
+                </div>
+              </div>
+              <div className="border-b border-border p-4">
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Buscar conversas"
+                  aria-label="Buscar conversas"
+                  className="rounded-full bg-background"
+                />
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none">
+                <div className="px-4 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Conversas
+                </div>
+                {isLoading ? (
+                  <p className="p-4 text-sm text-muted-foreground">Carregando conversas…</p>
+                ) : isError ? (
+                  <p className="p-4 text-sm text-destructive">
+                    Não foi possível carregar suas conversas.
+                  </p>
+                ) : visibleConversations.length === 0 ? (
+                  <p className="p-4 text-sm text-muted-foreground">
+                    {search ? "Nenhuma conversa encontrada." : "Você ainda não tem conversas."}
+                  </p>
+                ) : (
+                  visibleConversations.map(({ id, list, last }) => {
+                    const person = peopleById.get(id);
+                    const unread = list.some(
+                      (message) => message.recipient_id === user.id && !message.read,
+                    );
+                    return (
+                      <div
+                        key={id}
+                        className={`group flex items-center gap-3 border-b border-border/70 px-4 py-3 ${selected === id ? "bg-primary/10" : "hover:bg-background/70"}`}
+                      >
+                        <button
+                          onClick={() => {
+                            setActiveId(id);
+                            setMobileThreadOpen(true);
+                          }}
+                          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                        >
+                          <Avatar className="h-11 w-11 shrink-0">
+                            <AvatarImage src={safeUrl(person?.avatar_url) ?? undefined} />
+                            <AvatarFallback>{person?.full_name?.slice(0, 1) ?? "?"}</AvatarFallback>
+                          </Avatar>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center justify-between gap-2">
+                              <strong className="truncate text-sm">
+                                {person?.full_name ?? "Estudante"}
+                              </strong>
+                              <span className="shrink-0 text-[10px] text-muted-foreground">
+                                {new Date(last.created_at).toLocaleTimeString("pt-BR", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </span>
+                            <span className="flex items-center justify-between gap-2">
+                              <span className="truncate text-xs text-muted-foreground">
+                                {last.content}
+                              </span>
+                              {unread && (
+                                <i
+                                  className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                                  aria-label="Mensagem não lida"
+                                />
+                              )}
+                            </span>
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => toggleFavorite(id)}
+                          aria-label={
+                            favorites.includes(id)
+                              ? "Remover dos favoritos"
+                              : "Adicionar aos favoritos"
+                          }
+                          title={
+                            favorites.includes(id)
+                              ? "Remover dos favoritos"
+                              : "Adicionar aos favoritos"
+                          }
+                          className="rounded-full p-1.5 text-muted-foreground hover:bg-background hover:text-primary"
+                        >
+                          <Star
+                            className={`h-4 w-4 ${favorites.includes(id) ? "fill-primary text-primary" : ""}`}
                           />
-                        )}
-                      </span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {last.content}
-                      </span>
-                      <span className="mt-1 block text-[11px] text-muted-foreground">
-                        {dateLong(last.created_at)}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })
-            )}
-          </section>
-          <section className="flex min-h-96 flex-col rounded-xl border border-border bg-card">
-            <div className="border-b border-border p-4">
-              <h2 className="font-bold">
-                {selected ? (peopleById.get(selected)?.full_name ?? "Conversa") : "Nova conversa"}
-              </h2>
-              {selected && (
-                <p className="text-xs text-muted-foreground">
-                  @{peopleById.get(selected)?.username}
-                </p>
-              )}
-              {selected && selectableMessages.length > 0 && (
-                <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
-                  <label className="flex cursor-pointer items-center gap-2 text-sm">
-                    <Checkbox checked={allMessagesSelected} onCheckedChange={(checked) => toggleAllMessages(checked === true)} aria-label="Selecionar todas as mensagens recebidas" />
-                    Selecionar todas as recebidas
-                  </label>
-                  <Button size="sm" variant="outline" disabled={selectedMessageIds.size === 0} onClick={() => void markSelectedUnread()}>
-                    <CheckCheck className="h-4 w-4" /> Marcar como não lidas{selectedMessageIds.size ? ` (${selectedMessageIds.size})` : ""}
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div className="flex-1 space-y-3 overflow-y-auto p-4">
-              {currentMessages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex items-center gap-2 ${m.sender_id === user.id ? "justify-end" : ""}`}
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </aside>
+
+            <section
+              className={`${mobileThreadOpen ? "flex" : "hidden md:flex"} min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card`}
+            >
+              <header className="flex min-h-19 items-center gap-3 border-b border-border px-4 md:px-6">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  aria-label="Voltar para conversas"
+                  onClick={() => setMobileThreadOpen(false)}
                 >
-                  {m.recipient_id === user.id && <Checkbox checked={selectedMessageIds.has(m.id)} onCheckedChange={(checked) => toggleMessage(m.id, checked === true)} aria-label="Selecionar mensagem recebida" />}
-                  <div className={`max-w-[85%] rounded-xl p-3 text-sm ${m.sender_id === user.id ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                    <p className="whitespace-pre-wrap">{m.content}</p>
-                    <p className="mt-1 text-right text-[10px] opacity-70">
-                      {new Date(m.created_at).toLocaleString("pt-BR", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <form onSubmit={send} className="space-y-2 border-t border-border p-4">
-              {!selected && (
-                <>
-                  <Label htmlFor="recipient">Iniciar conversa com @usuário</Label>
+                  <ArrowLeft />
+                </Button>
+                {selected ? (
+                  <>
+                    <Avatar className="h-11 w-11">
+                      <AvatarImage
+                        src={safeUrl(peopleById.get(selected)?.avatar_url) ?? undefined}
+                      />
+                      <AvatarFallback>
+                        {peopleById.get(selected)?.full_name?.slice(0, 1) ?? "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <h1 className="truncate font-semibold">
+                        {peopleById.get(selected)?.full_name ?? "Conversa"}
+                      </h1>
+                      <p className="truncate text-xs text-muted-foreground">
+                        @{peopleById.get(selected)?.username}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={
+                        favorites.includes(selected)
+                          ? "Remover perfil dos favoritos"
+                          : "Favoritar perfil"
+                      }
+                      title={
+                        favorites.includes(selected) ? "Remover dos favoritos" : "Favoritar perfil"
+                      }
+                      onClick={() => toggleFavorite(selected)}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${favorites.includes(selected) ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                      />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <h1 className="font-semibold">Nova conversa</h1>
+                      <p className="text-xs text-muted-foreground">
+                        Envie uma mensagem para alguém do campus
+                      </p>
+                    </div>
+                  </>
+                )}
+              </header>
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 scrollbar-none md:px-8 md:py-6">
+                {currentMessages.map((message) => {
+                  const mine = message.sender_id === user.id;
+                  const sender = peopleById.get(message.sender_id);
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
+                    >
+                      {!mine && (
+                        <Avatar className="mb-1 h-7 w-7 shrink-0">
+                          <AvatarImage src={safeUrl(sender?.avatar_url) ?? undefined} />
+                          <AvatarFallback>{sender?.full_name?.slice(0, 1) ?? "?"}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div
+                        className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm shadow-sm md:max-w-[70%] ${mine ? "rounded-br-md bg-primary text-primary-foreground" : "rounded-bl-md bg-muted text-foreground"}`}
+                      >
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <p
+                          className={`mt-1 text-right text-[10px] ${mine ? "opacity-70" : "text-muted-foreground"}`}
+                        >
+                          {new Date(message.created_at).toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <form onSubmit={send} className="border-t border-border p-3 md:px-6 md:py-4">
+                {!selected && (
                   <Input
-                    id="recipient"
                     value={recipient}
-                    onChange={(e) => setRecipient(e.target.value)}
-                    placeholder="@ana.souza"
+                    onChange={(event) => setRecipient(event.target.value)}
+                    placeholder="Iniciar conversa com @usuário"
+                    aria-label="Nome de usuário do destinatário"
+                    className="mb-3"
                     required
                   />
-                </>
-              )}
-              <div className="flex gap-2">
-                <Textarea
-                  aria-label="Mensagem"
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  // ✏️ ALTERAÇÃO 7 (de novo): encoding corrigido aqui também
-                  placeholder="Escreva uma mensagem…"
-                  maxLength={2000}
-                  required
-                  className="min-h-10"
-                />
-                <Button type="submit" disabled={busy}>
-                  <Send /> Enviar
-                </Button>
-              </div>
-              <p className="text-right text-xs text-muted-foreground">{text.length}/2000</p>
-            </form>
-          </section>
-        </div>
-      )}
+                )}
+                <div className="flex items-end gap-2 rounded-2xl p-2">
+                  <Textarea
+                    aria-label="Mensagem"
+                    value={text}
+                    onChange={(event) => setText(event.target.value)}
+                    placeholder="Escreva uma mensagem…"
+                    maxLength={2000}
+                    required
+                    className="max-h-28 min-h-11 resize-none border-1 bg-background shadow-none"
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={busy}
+                    aria-label="Enviar mensagem"
+                    className="h-11 w-11 shrink-0 rounded-full"
+                  >
+                    <Send />
+                  </Button>
+                </div>
+                <p className="mt-1 text-right text-[10px] text-muted-foreground">
+                  {text.length}/2000
+                </p>
+              </form>
+            </section>
+          </main>
+        )}
+      </div>
     </AppShell>
   );
 }

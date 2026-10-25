@@ -22,7 +22,7 @@ export function BackButton({
         if (router.history.canGoBack()) router.history.back();
         else void router.navigate({ to: fallbackTo });
       }}
-      className="mb-4 -ml-2 gap-2 text-muted-foreground hover:text-foreground"
+      className="mb-1 -ml-2 gap-2 text-muted-foreground hover:text-foreground"
     >
       <ArrowLeft className="h-4 w-4" /> {label}
     </Button>

@@ -6,14 +6,14 @@ import {
   CommunityTile,
   Composer,
   Empty,
-  EventRow,
   NewsArticleCard,
   PostCard,
   SectionHeading,
 } from "@/components/CampusContent";
-import { dateLong } from "@/lib/format";
+import { dateLong, dayMonth } from "@/lib/format";
 import { Button } from "@/components/UI/button";
 import { useCampusData } from "@/hooks/useCampusData";
+import { createCalendarEntries } from "@/lib/sample-events";
 
 import campusStudents from "@/assets/Images/Image-1.jpg";
 import campusOpportunity from "@/assets/Images/Image-2.jpg";
@@ -25,6 +25,22 @@ export function HomePage() {
   const { articles, posts, events, communities, opportunities } = useCampusData();
   const featuredCarouselRef = useRef<HTMLDivElement>(null);
   const [featuredIndex, setFeaturedIndex] = useState(0);
+  const currentMonth = new Date();
+  const homepageEventCandidates = [
+    ...createCalendarEntries(currentMonth),
+    ...(events.data ?? []),
+  ].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  const homepageEvents = [20, 21, 22, 29, 30].flatMap((day) => {
+    const event = homepageEventCandidates.find((candidate) => {
+      const startsAt = new Date(candidate.starts_at);
+      return (
+        startsAt.getDate() === day &&
+        startsAt.getMonth() === currentMonth.getMonth() &&
+        startsAt.getFullYear() === currentMonth.getFullYear()
+      );
+    });
+    return event ? [event] : [];
+  });
   const featuredNews = articles.data?.slice(0, 2) ?? [];
   const featuredOpportunity = opportunities.data?.[0];
   const featuredSlides = [
@@ -50,15 +66,36 @@ export function HomePage() {
     setFeaturedIndex(nextIndex);
   }
   const aside = (
-    <div className="space-y-5">
+    <div className="space-y-5 pt-[5.75rem]">
       <div className="border-b border-border pb-4">
         <SectionHeading title="Próximos eventos" to="/eventos" />
-        {events.data
-          ?.filter((e) => new Date(e.starts_at) >= new Date())
-          .slice(0, 3)
-          .map((e) => (
-            <EventRow key={e.id} event={e} />
-          ))}
+        <div className="mt-3 space-y-2">
+          {homepageEvents.map((event) => {
+            const date = dayMonth(event.starts_at);
+            return (
+              <article
+                key={event.id}
+                className="flex min-h-[4.25rem] overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+              >
+                <div className="flex w-14 shrink-0 flex-col items-center justify-center bg-peach/20">
+                  <strong className="text-xl leading-5 text-destructive">{date.day}</strong>
+                  <span className="mt-0.5 text-[10px] font-bold text-muted-foreground">
+                    {date.month}
+                  </span>
+                </div>
+                <div className="min-w-0 self-center px-3 py-2">
+                  <h3 className="line-clamp-2 text-xs font-bold leading-snug">{event.title}</h3>
+                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                    {event.location ?? "Sem local informado"}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
+          {homepageEvents.length === 0 && (
+            <p className="py-2 text-xs text-muted-foreground">Nenhum evento nessas datas.</p>
+          )}
+        </div>
       </div>
       <div>
         <SectionHeading title="Comunidades" to="/comunidades" />

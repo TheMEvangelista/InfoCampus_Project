@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+﻿import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Bell, ChevronDown, LogOut, Menu, Search, Settings, UserRound, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,7 +25,7 @@ import { useOpenSearchResult } from "./functions/useOpenSearchResult";
 import { useSidebarControls } from "./functions/useSidebarControls";
 import { useUnreadCount } from "./functions/useUnreadCount";
 
-export function AppShell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
+export function AppShell({ children, aside, immersive = false }: { children: ReactNode; aside?: ReactNode; immersive?: boolean }) {
   const [term, setTerm] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -46,7 +46,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={immersive ? "h-dvh overflow-hidden bg-background" : "min-h-screen bg-background"}>
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -206,7 +206,12 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
         )}
       </header>
 
-      <div className="mx-auto flex max-w-[1600px] gap-5 px-3 py-6">
+      <div
+        className={cn(
+          "mx-auto flex max-w-[1600px] gap-5 px-3",
+          immersive ? "h-[calc(100dvh-4.0625rem)] py-0" : "py-6",
+        )}
+      >
         <div
           className={cn(
             "hidden shrink-0 transition-[width] duration-500 ease-in-out motion-reduce:transition-none lg:block",
@@ -253,12 +258,12 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
           </div>
         </div>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className={cn("min-w-0 flex-1", immersive && "h-full min-h-0")}>{children}</main>
 
         {aside && <aside className="hidden w-80 shrink-0 space-y-6 xl:block">{aside}</aside>}
       </div>
 
-      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+      {!immersive && <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         InfoCampus · Comunidade acadêmica do IFMA ·{" "}
         <Link to="/termos" className="underline">
           Termos de uso
@@ -267,7 +272,7 @@ export function AppShell({ children, aside }: { children: ReactNode; aside?: Rea
         <Link to="/privacidade" className="underline">
           Política de privacidade
         </Link>
-      </footer>
+      </footer>}
     </div>
   );
 }

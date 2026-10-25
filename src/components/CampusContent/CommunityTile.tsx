@@ -30,9 +30,9 @@ export function CommunityTile({ community }: { community: Community }) {
   }
   const memberCount = community.community_members.length;
   return (
-    <article className="flex min-h-28 items-center gap-4 rounded-xl border border-border bg-card px-5 py-4 shadow-sm transition-shadow hover:shadow-card">
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-deep">
-        <Users className="h-6 w-6" />
+    <article className="flex min-h-[6.3rem] items-center gap-3.5 rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm transition-shadow hover:shadow-card">
+      <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-deep">
+        <Users className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
         <h2 className="truncate text-sm font-bold text-foreground">{community.name}</h2>
