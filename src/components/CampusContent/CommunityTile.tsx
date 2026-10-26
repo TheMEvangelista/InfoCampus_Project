@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Users } from "lucide-react";
@@ -35,8 +36,8 @@ export function CommunityTile({ community }: { community: Community }) {
         <Users className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <h2 className="truncate text-sm font-bold text-foreground">{community.name}</h2>
-        <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{community.description}</p>
+        <h2 className="truncate text-sm font-bold text-foreground"><Link to="/comunidade/$slug" params={{ slug: community.slug }} className="hover:text-primary-deep hover:underline">{community.name}</Link></h2>
+        <Link to="/comunidade/$slug" params={{ slug: community.slug }} className="mt-0.5 line-clamp-2 text-sm text-muted-foreground hover:underline">{community.description || "Conheça a comunidade e participe das conversas."}</Link>
         <span className="mt-1.5 block text-xs text-muted-foreground">
           {memberCount} {memberCount === 1 ? "membro" : "membros"}
         </span>
