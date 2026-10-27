@@ -29,6 +29,7 @@ import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ArtigoSlugRouteImport } from './routes/artigo.$slug'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
+import { Route as ComunidadeSlugRouteImport } from './routes/comunidade.$slug'
 import { Route as OportunidadeIdRouteImport } from './routes/oportunidade.$id'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 
@@ -132,6 +133,11 @@ const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
   path: '/categoria/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunidadeSlugRoute = ComunidadeSlugRouteImport.update({
+  id: '/comunidade/$slug',
+  path: '/comunidade/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OportunidadeIdRoute = OportunidadeIdRouteImport.update({
   id: '/oportunidade/$id',
   path: '/oportunidade/$id',
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/comunidade/$slug': typeof ComunidadeSlugRoute
   '/oportunidade/$id': typeof OportunidadeIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/comunidade/$slug': typeof ComunidadeSlugRoute
   '/oportunidade/$id': typeof OportunidadeIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/artigo/$slug': typeof ArtigoSlugRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/comunidade/$slug': typeof ComunidadeSlugRoute
   '/oportunidade/$id': typeof OportunidadeIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
@@ -239,6 +248,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
+    | '/comunidade/$slug'
     | '/oportunidade/$id'
     | '/perfil/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
+    | '/comunidade/$slug'
     | '/oportunidade/$id'
     | '/perfil/$username'
   id:
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/artigo/$slug'
     | '/categoria/$slug'
+    | '/comunidade/$slug'
     | '/oportunidade/$id'
     | '/perfil/$username'
   fileRoutesById: FileRoutesById
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   ArtigoSlugRoute: typeof ArtigoSlugRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
+  ComunidadeSlugRoute: typeof ComunidadeSlugRoute
   OportunidadeIdRoute: typeof OportunidadeIdRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
 }
@@ -458,6 +471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comunidade/$slug': {
+      id: '/comunidade/$slug'
+      path: '/comunidade/$slug'
+      fullPath: '/comunidade/$slug'
+      preLoaderRoute: typeof ComunidadeSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/oportunidade/$id': {
       id: '/oportunidade/$id'
       path: '/oportunidade/$id'
@@ -496,6 +516,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   ArtigoSlugRoute: ArtigoSlugRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
+  ComunidadeSlugRoute: ComunidadeSlugRoute,
   OportunidadeIdRoute: OportunidadeIdRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
 }

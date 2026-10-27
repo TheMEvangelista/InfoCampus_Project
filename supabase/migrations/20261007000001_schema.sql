@@ -98,16 +98,14 @@ create table public.posts (
   community_id uuid,
   content text not null,
   image_url text,
-  video_url text,
-  link_url text,
+  link_urls text[] not null default '{}',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint posts_author_id_fkey foreign key (author_id) references public.profiles (id) on delete cascade,
   constraint posts_community_id_fkey foreign key (community_id) references public.communities (id) on delete set null,
   constraint posts_content_len check (char_length(btrim(content)) between 1 and 5000),
   constraint posts_image_url_http check (image_url is null or (image_url ~* '^https?://' and char_length(image_url) <= 2048)),
-  constraint posts_video_url_http check (video_url is null or (video_url ~* '^https?://' and char_length(video_url) <= 2048)),
-  constraint posts_link_url_http check (link_url is null or (link_url ~* '^https?://' and char_length(link_url) <= 2048))
+  constraint posts_link_urls_count check (cardinality(link_urls) <= 10 and array_position(link_urls, null) is null and array_position(link_urls, '') is null)
 );
 create index posts_created_idx on public.posts (created_at desc);
 create index posts_author_idx on public.posts (author_id);

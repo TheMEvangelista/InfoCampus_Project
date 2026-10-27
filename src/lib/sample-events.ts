@@ -80,7 +80,7 @@ export function createCalendarEntries(month: Date): CalendarEntry[] {
       summary: "Data comemorativa da comunidade escolar.",
       location: "IFMA",
       starts_at: makeDateInMonth(month, 15),
-      category: "holiday",
+      category: "event",
     },
     {
       id: "holiday-consciencia-negra",

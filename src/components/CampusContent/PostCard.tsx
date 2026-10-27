@@ -73,7 +73,10 @@ export function PostCard({ post }: { post: Post }) {
     }
   }
   return (
-    <article id={`post-${post.id}`} className="rounded-md border border-border bg-card p-5 shadow-card">
+    <article
+      id={`post-${post.id}`}
+      className="rounded-md border border-border bg-card p-5 shadow-card"
+    >
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10">
           <AvatarImage src={safeUrl(post.profiles?.avatar_url) ?? undefined} />
@@ -81,10 +84,16 @@ export function PostCard({ post }: { post: Post }) {
         </Avatar>
         <div className="min-w-0 flex-1">
           {post.profiles?.username ? (
-            <Link to="/perfil/$username" params={{ username: post.profiles.username }} className="text-sm font-bold hover:text-primary-deep">
+            <Link
+              to="/perfil/$username"
+              params={{ username: post.profiles.username }}
+              className="text-sm font-bold hover:text-primary-deep"
+            >
               {post.profiles.full_name ?? "Estudante"}
             </Link>
-          ) : <span className="text-sm font-bold">{post.profiles?.full_name ?? "Estudante"}</span>}
+          ) : (
+            <span className="text-sm font-bold">{post.profiles?.full_name ?? "Estudante"}</span>
+          )}
           <p className="text-xs text-muted-foreground">
             @{post.profiles?.username} · {timeAgo(post.created_at)}
             {post.communities && <> · {post.communities.name}</>}
@@ -100,25 +109,19 @@ export function PostCard({ post }: { post: Post }) {
           className="mt-4 max-h-96 w-full rounded-md object-cover"
         />
       )}
-      {safeUrl(post.video_url) && (
-        <a
-          href={safeUrl(post.video_url)!}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 block text-sm text-primary-deep underline"
-        >
-          Ver vídeo
-        </a>
-      )}
-      {safeUrl(post.link_url) && (
-        <a
-          href={safeUrl(post.link_url)!}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 block truncate text-sm text-primary-deep underline"
-        >
-          {post.link_url}
-        </a>
+      {post.link_urls.map(
+        (link) =>
+          safeUrl(link) && (
+            <a
+              key={link}
+              href={safeUrl(link)!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 block truncate text-sm text-primary-deep underline"
+            >
+              {link}
+            </a>
+          ),
       )}
       <div className="mt-4 flex items-center gap-1 border-t border-border pt-3 text-muted-foreground">
         <Button

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -515,9 +515,8 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
-          link_url: string | null
+          link_urls: string[]
           updated_at: string
-          video_url: string | null
         }
         Insert: {
           author_id: string
@@ -526,9 +525,8 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
-          link_url?: string | null
+          link_urls?: string[]
           updated_at?: string
-          video_url?: string | null
         }
         Update: {
           author_id?: string
@@ -537,9 +535,8 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
-          link_url?: string | null
+          link_urls?: string[]
           updated_at?: string
-          video_url?: string | null
         }
         Relationships: [
           {

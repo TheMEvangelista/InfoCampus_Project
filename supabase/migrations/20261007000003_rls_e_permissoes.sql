@@ -229,7 +229,7 @@ grant update (content) on public.comments to authenticated;
 grant insert, update, delete on public.communities to authenticated;
 grant insert, delete on public.community_members to authenticated;
 grant insert, delete on public.posts to authenticated;
-grant update (content, image_url, video_url, link_url) on public.posts to authenticated;
+grant update (content, image_url, link_urls) on public.posts to authenticated;
 grant insert, delete on public.post_likes to authenticated;
 grant insert, delete on public.saved_items to authenticated;
 grant insert, delete on public.follows to authenticated;

@@ -1,9 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Settings, Star, Users } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import {
-  CommunityTile,
   Composer,
   Empty,
   NewsArticleCard,
@@ -13,22 +12,70 @@ import {
 import { dateLong, dayMonth } from "@/lib/format";
 import { Button } from "@/components/UI/button";
 import { useCampusData } from "@/hooks/useCampusData";
+import { useAuth } from "@/lib/auth";
 import { createCalendarEntries } from "@/lib/sample-events";
+import { getEventCategory, eventCategoryStyles, type CategorizedEvent } from "@/lib/event-category";
+import { EventDetailsDialog } from "@/components/CampusContent/EventDetailsDialog";
 
 import campusStudents from "@/assets/Images/Image-1.jpg";
 import campusOpportunity from "@/assets/Images/Image-2.jpg";
 import { Article } from "@/lib/content";
+import { safeUrl } from "@/lib/url";
 
 const featuredCarouselContentTypes = ["news", "opportunity", "event", "article"] as const;
+const favoriteCommunitiesStorageKey = "infocampus-favorite-communities";
 
 export function HomePage() {
   const { articles, posts, events, communities, opportunities } = useCampusData();
+  const { user } = useAuth();
   const featuredCarouselRef = useRef<HTMLDivElement>(null);
   const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [communityListOpen, setCommunityListOpen] = useState(true);
+  const [favoriteCommunityIds, setFavoriteCommunityIds] = useState<string[]>([]);
+  const [activeEvent, setActiveEvent] = useState<CategorizedEvent | null>(null);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(favoriteCommunitiesStorageKey);
+      if (!stored) return;
+      const parsed: unknown = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.every((id) => typeof id === "string"))
+        setFavoriteCommunityIds(parsed);
+    } catch {
+      // If local storage is unavailable or invalid, keep the default empty favorites list.
+    }
+  }, []);
+  const listedCommunities = [...(communities.data ?? [])].sort((a, b) => {
+    const aFavorite =
+      a.community_members.some((member) => member.user_id === user?.id) &&
+      favoriteCommunityIds.includes(a.id);
+    const bFavorite =
+      b.community_members.some((member) => member.user_id === user?.id) &&
+      favoriteCommunityIds.includes(b.id);
+    if (aFavorite !== bFavorite) return aFavorite ? -1 : 1;
+    return a.name.localeCompare(b.name, "pt-BR");
+  });
+  const joinedCommunities = listedCommunities.filter((community) =>
+    community.community_members.some((member) => member.user_id === user?.id),
+  );
+  const otherCommunities = listedCommunities.filter(
+    (community) => !community.community_members.some((member) => member.user_id === user?.id),
+  );
+
+  function toggleFavoriteCommunity(communityId: string) {
+    const updated = favoriteCommunityIds.includes(communityId)
+      ? favoriteCommunityIds.filter((id) => id !== communityId)
+      : [...favoriteCommunityIds, communityId];
+    setFavoriteCommunityIds(updated);
+    try {
+      window.localStorage.setItem(favoriteCommunitiesStorageKey, JSON.stringify(updated));
+    } catch {
+      // Keep the current session usable if local storage is unavailable.
+    }
+  }
   const currentMonth = new Date();
   const homepageEventCandidates = [
     ...createCalendarEntries(currentMonth),
-    ...(events.data ?? []),
+    ...(events.data ?? []).map((event) => ({ ...event, category: getEventCategory(event) })),
   ].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const homepageEvents = [20, 21, 22, 29, 30].flatMap((day) => {
     const event = homepageEventCandidates.find((candidate) => {
@@ -73,23 +120,22 @@ export function HomePage() {
           {homepageEvents.map((event) => {
             const date = dayMonth(event.starts_at);
             return (
-              <article
+              <button
                 key={event.id}
-                className="flex min-h-[4.25rem] overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+                type="button"
+                onClick={() => setActiveEvent({ ...event, category: "category" in event ? event.category : getEventCategory(event) })}
+                className={`flex min-h-[4.25rem] w-full overflow-hidden rounded-lg border text-left shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${eventCategoryStyles["category" in event ? event.category : getEventCategory(event)].card}`}
               >
-                <div className="flex w-14 shrink-0 flex-col items-center justify-center bg-peach/20">
-                  <strong className="text-xl leading-5 text-destructive">{date.day}</strong>
-                  <span className="mt-0.5 text-[10px] font-bold text-muted-foreground">
+                <div className="flex w-14 shrink-0 flex-col items-center justify-center border-r border-current/10">
+                  <strong className="text-xl leading-5">{date.day}</strong>
+                  <span className="mt-0.5 text-[10px] font-bold opacity-75">
                     {date.month}
                   </span>
                 </div>
                 <div className="min-w-0 self-center px-3 py-2">
                   <h3 className="line-clamp-2 text-xs font-bold leading-snug">{event.title}</h3>
-                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                    {event.location ?? "Sem local informado"}
-                  </p>
                 </div>
-              </article>
+              </button>
             );
           })}
           {homepageEvents.length === 0 && (
@@ -98,12 +144,103 @@ export function HomePage() {
         </div>
       </div>
       <div>
-        <SectionHeading title="Comunidades" to="/comunidades" />
-        {communities.data?.slice(0, 3).map((c) => (
-          <div key={c.id} className="mb-2">
-            <CommunityTile community={c} />
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setCommunityListOpen((open) => !open)}
+            aria-expanded={communityListOpen}
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          >
+            Comunidades
+            {communityListOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+          <Link
+            to="/comunidades"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            <Settings className="h-4 w-4" /> Gerenciar comunidades
+          </Link>
+        </div>
+        {communityListOpen && (
+          <div className="space-y-3">
+            <div>
+              <h3 className="mb-2 border-b border-border pb-2 text-xs font-semibold text-muted-foreground">
+                Suas comunidades
+              </h3>
+              <div className="space-y-1">
+                {joinedCommunities.map((community) => {
+              const isFavorite = favoriteCommunityIds.includes(community.id);
+              return (
+              <div key={community.id} className="flex items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted/70">
+                <Link
+                  to="/comunidade/$slug"
+                  params={{ slug: community.slug }}
+                  aria-label={`Abrir comunidade ${community.name}`}
+                  className="flex min-w-0 flex-1 items-center gap-2.5"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-primary-deep">
+                    {safeUrl(community.cover_url) ? (
+                      <img src={safeUrl(community.cover_url)!} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Users className="h-5 w-5" />
+                    )}
+                  </span>
+                  <span className="truncate text-sm font-medium">{community.name}</span>
+                </Link>
+                <button
+                  type="button"
+                  aria-label={isFavorite ? `Remover ${community.name} dos favoritos` : `Adicionar ${community.name} aos favoritos`}
+                  aria-pressed={isFavorite}
+                  onClick={() => toggleFavoriteCommunity(community.id)}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                >
+                  <Star className={`h-5 w-5 ${isFavorite ? "fill-current text-primary" : ""}`} />
+                </button>
+              </div>
+              );
+            })}
+                {joinedCommunities.length === 0 && (
+                  <p className="px-1 py-2 text-xs text-muted-foreground">
+                    Você ainda não participa de comunidades.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
+                Descobrir comunidades
+              </h3>
+              <div className="space-y-1">
+                {otherCommunities.map((community) => {
+                  return (
+                    <div key={community.id} className="flex items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted/70">
+                      <Link
+                        to="/comunidade/$slug"
+                        params={{ slug: community.slug }}
+                        aria-label={`Abrir comunidade ${community.name}`}
+                        className="flex min-w-0 flex-1 items-center gap-2.5"
+                      >
+                        <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-primary-deep">
+                          {safeUrl(community.cover_url) ? (
+                            <img src={safeUrl(community.cover_url)!} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Users className="h-5 w-5" />
+                          )}
+                        </span>
+                        <span className="truncate text-sm font-medium">{community.name}</span>
+                      </Link>
+                    </div>
+                  );
+                })}
+                {otherCommunities.length === 0 && (
+                  <p className="px-1 py-2 text-xs text-muted-foreground">
+                    Você já participa de todas as comunidades.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -282,6 +419,7 @@ export function HomePage() {
           </div>
         </section>
       </div>
+      <EventDetailsDialog event={activeEvent} onClose={() => setActiveEvent(null)} />
     </AppShell>
   );
 }

@@ -4,7 +4,7 @@ values (
   'post-media',
   true,
   52428800,
-  array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime']::text[]
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif']::text[]
 )
 on conflict (id) do update
 set public = excluded.public,
