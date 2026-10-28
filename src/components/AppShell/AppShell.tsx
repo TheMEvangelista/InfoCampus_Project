@@ -1,6 +1,6 @@
-﻿import { useState, type ReactNode } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Bell, ChevronDown, LogOut, Menu, Search, Settings, UserRound, X } from "lucide-react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Bell, BriefcaseBusiness, CalendarDays, ChevronDown, Home, LogOut, Menu, Newspaper, Search, Settings, UserRound, Users, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useProfile } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,12 +25,23 @@ import { useOpenSearchResult } from "./functions/useOpenSearchResult";
 import { useSidebarControls } from "./functions/useSidebarControls";
 import { useUnreadCount } from "./functions/useUnreadCount";
 
+const mobileNavItems = [
+  { to: "/", label: "Início", icon: Home },
+  { to: "/noticias", label: "Notícias", icon: Newspaper },
+  { to: "/eventos", label: "Eventos", icon: CalendarDays },
+  { to: "/oportunidades", label: "Vagas", icon: BriefcaseBusiness },
+  { to: "/comunidades", label: "Rede", icon: Users },
+] as const;
+
 export function AppShell({ children, aside, immersive = false }: { children: ReactNode; aside?: ReactNode; immersive?: boolean }) {
   const [term, setTerm] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileSidebarTop, setMobileSidebarTop] = useState(0);
+  const headerRef = useRef<HTMLElement>(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const queryClient = useQueryClient();
   const { data: profile } = useProfile();
   const { data: unread } = useUnreadCount();
@@ -38,6 +49,16 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
   const { mobileOpen, collapsed, toggleSidebar, closeMobileSidebar, collapseSidebar } =
     useSidebarControls(isDesktop);
   const openSearchResult = useOpenSearchResult(term, () => setMobileSearchOpen(false));
+  useLayoutEffect(() => {
+    if (!mobileSearchOpen) return;
+    const header = headerRef.current;
+    if (!header) return;
+    const updateSidebarTop = () => setMobileSidebarTop(header.getBoundingClientRect().height);
+    updateSidebarTop();
+    const observer = new ResizeObserver(updateSidebarTop);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, [mobileSearchOpen]);
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -47,8 +68,8 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
 
   return (
     <div className={immersive ? "h-dvh overflow-hidden bg-background" : "min-h-screen bg-background"}>
-      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-3">
+      <header ref={headerRef} className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+        <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr] items-center gap-3 px-3 py-3 md:grid-cols-[auto_1fr_auto]">
           <div className="flex min-w-0 items-center gap-2">
             <Button
               variant="ghost"
@@ -87,7 +108,7 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
             />
           </form>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 justify-self-end sm:gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -102,7 +123,7 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
               asChild
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative hidden md:inline-flex"
               aria-label="Notificações"
             >
               <Link to="/notificacoes">
@@ -158,6 +179,16 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem asChild className="mt-1 md:hidden">
+                    <Link to="/notificacoes" className="flex items-center">
+                      <Bell className="mr-2 h-4 w-4" /> Notificações
+                      {!!unread && (
+                        <Badge className="ml-auto h-5 min-w-5 justify-center rounded-full bg-secondary px-1 text-[10px] text-secondary-foreground">
+                          {unread}
+                        </Badge>
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild className="mt-1">
                     <Link to="/configuracoes">
                       <Settings className="mr-2 h-4 w-4" /> Configurações
@@ -209,7 +240,7 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
       <div
         className={cn(
           "mx-auto flex max-w-[1600px] gap-5 px-3",
-          immersive ? "h-[calc(100dvh-4.0625rem)] py-0" : "py-6",
+          immersive ? "h-[calc(100dvh-4.0625rem)] py-0" : "py-6 pb-24 lg:pb-6",
         )}
       >
         <div
@@ -248,9 +279,11 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
           />
           <div
             className={cn(
-              "fixed inset-y-0 left-0 flex w-64 flex-col bg-sidebar pt-16 shadow-card transition-transform duration-500 ease-in-out motion-reduce:transition-none",
+              "fixed top-0 bottom-0 left-0 flex w-64 flex-col bg-sidebar shadow-card transition-transform duration-500 ease-in-out motion-reduce:transition-none",
+              !mobileSearchOpen && "pt-16",
               mobileOpen ? "translate-x-0" : "-translate-x-full",
             )}
+            style={mobileSearchOpen ? { top: `${mobileSidebarTop}px` } : undefined}
           >
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               <SidebarNav onNavigate={collapseSidebar} />
@@ -262,6 +295,13 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
 
         {aside && <aside className="hidden w-80 shrink-0 space-y-6 xl:block">{aside}</aside>}
       </div>
+
+      <nav aria-label="Navegação principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card px-2 pt-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
+        {mobileNavItems.map(({ to, label, icon: Icon }) => {
+          const active = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+          return <Link key={to} to={to} className={`flex flex-col items-center gap-1 pb-1 text-[10px] ${active ? "font-semibold text-primary" : "text-muted-foreground"}`}><Icon className="h-5 w-5" /><span>{label}</span></Link>;
+        })}
+      </nav>
 
       {!immersive && <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         InfoCampus · Comunidade acadêmica do IFMA ·{" "}

@@ -116,7 +116,7 @@ export function CommunityPage({ slug }: { slug: string }) {
           </div>
         </section>
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px]">
-          <main className="min-w-0 space-y-4">
+          <main className="order-last min-w-0 space-y-4 lg:order-first">
             <Composer communityId={community.id} disabled={!member} />
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-bold">
@@ -158,7 +158,7 @@ export function CommunityPage({ slug }: { slug: string }) {
               </div>
             )}
           </main>
-          <aside className="h-fit space-y-4 rounded-md border border-border bg-card p-5 shadow-card lg:sticky lg:top-5">
+          <aside className="order-first h-fit space-y-4 rounded-md border border-border bg-card p-5 shadow-card lg:sticky lg:top-5 lg:order-last">
             <h2 className="font-bold">Sobre esta comunidade</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {community.description || "Conecte-se com estudantes e participe das conversas."}

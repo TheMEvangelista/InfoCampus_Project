@@ -8,7 +8,13 @@ import { useAuth } from "@/lib/auth";
 import { Community } from "@/lib/content";
 import { Button } from "@/components/UI/button";
 
-export function CommunityTile({ community }: { community: Community }) {
+export function CommunityTile({
+  community,
+  showMembershipAction = true,
+}: {
+  community: Community;
+  showMembershipAction?: boolean;
+}) {
   const [busy, setBusy] = useState(false);
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -42,15 +48,17 @@ export function CommunityTile({ community }: { community: Community }) {
           {memberCount} {memberCount === 1 ? "membro" : "membros"}
         </span>
       </div>
-      <Button
-        size="sm"
-        variant={member ? "outline" : "default"}
-        onClick={toggle}
-        disabled={busy}
-        className="shrink-0"
-      >
-        {busy ? "Aguarde..." : member ? "Sair" : "Participar"}
-      </Button>
+      {showMembershipAction && (
+        <Button
+          size="sm"
+          variant={member ? "outline" : "default"}
+          onClick={toggle}
+          disabled={busy}
+          className="shrink-0"
+        >
+          {busy ? "Aguarde..." : member ? "Sair" : "Participar"}
+        </Button>
+      )}
     </article>
   );
 }

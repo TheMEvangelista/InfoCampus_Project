@@ -166,8 +166,7 @@ export function MessagesPage() {
     const next = favorites.includes(id)
       ? favorites.filter((favorite) => favorite !== id)
       : [...favorites, id];
-    if (next.length > FAVORITES_LIMIT)
-      return toast.error("Você pode favoritar apenas 3 conversas");
+    if (next.length > FAVORITES_LIMIT) return toast.error("Você pode favoritar apenas 3 conversas");
     setFavorites(next);
     if (user) localStorage.setItem(`message-favorites:${user.id}`, JSON.stringify(next));
     toast.success(
@@ -217,13 +216,12 @@ export function MessagesPage() {
 
   return (
     <AppShell immersive>
-      <div className="flex h-full min-h-0 flex-col px-3 md:px-0">
-        <div className="shrink-0 pt-4">
+      <div className="flex h-full min-h-0 flex-col px-1 md:px-0">
+        <div className="shrink-0 pt-1 md:pt-4">
           <BackButton fallbackTo="/" />
-          <PageHeading
-            title="Mensagens"
-            subtitle="Suas conversas privadas com pessoas do campus."
-          />
+          <div className="hidden md:block">
+            <PageHeading title="Mensagens" className="mb-5 border-b border-border pb-3" />
+          </div>
         </div>
         {!user ? (
           <div className="grid min-h-0 flex-1 place-items-center p-6">
