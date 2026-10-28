@@ -96,7 +96,7 @@ export function NotificationsPage() {
   }
   return <AppShell>
     <BackButton />
-    <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><PageHeading title="Notificações" subtitle="Novidades para você." /></div>
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><PageHeading title="Notificações" /></div>
     {!user ? <LoginPrompt /> : <>
       <div className="mb-4 flex flex-wrap gap-2 rounded-xl border border-border bg-card p-2">{filters.map((item) => <Button key={item.id} variant={filter === item.id ? "default" : "ghost"} size="sm" onClick={() => { setFilter(item.id); setSelectedIds(new Set()); }}>{item.label}</Button>)}</div>
       <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">

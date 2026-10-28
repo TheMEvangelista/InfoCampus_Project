@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PageHeading } from "@/components/CampusContent/PageHeading";
+import { BackButton } from "@/components/CampusContent/BackButton";
 import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
 import {
@@ -56,10 +57,10 @@ export function SearchPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeading
-          title="Buscar no InfoCampus"
-          subtitle="Encontre notícias, artigos, pessoas e comunidades."
-        />
+        <div>
+          <BackButton fallbackTo="/" />
+          <PageHeading title="Buscar no InfoCampus" />
+        </div>
         <form onSubmit={submit} role="search" className="flex max-w-2xl gap-2">
           <Input
             aria-label="Termo da pesquisa"

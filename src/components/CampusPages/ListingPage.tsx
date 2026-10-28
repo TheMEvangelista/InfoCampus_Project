@@ -40,17 +40,17 @@ export function ListingPage({
     ) ?? [];
   const config = (
     {
-      noticias: ["Notícias", "Acompanhe o que acontece no IFMA."],
-      eventos: ["Eventos", "Encontros, oficinas e atividades do campus."],
-      oportunidades: ["Oportunidades", "Vagas, bolsas e projetos para dar o próximo passo."],
-      comunidades: ["Comunidades", "Encontre pessoas com os mesmos interesses."],
-      artigos: ["Artigos", "Ideias e histórias da nossa comunidade."],
-    } as Record<string, [string, string]>
+      noticias: "Notícias",
+      eventos: "Eventos",
+      oportunidades: "Oportunidades",
+      comunidades: "Comunidades",
+      artigos: "Artigos",
+    } as Record<string, string>
   )[kind]!;
   return (
     <AppShell>
       <BackButton fallbackTo="/" />
-      <PageHeading title={config[0]} subtitle={config[1]} />
+      <PageHeading title={config} />
       {(kind === "noticias" || kind === "artigos") && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {articles.data?.map((article) =>

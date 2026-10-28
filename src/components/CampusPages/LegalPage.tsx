@@ -1,10 +1,12 @@
 import { AppShell } from "@/components/AppShell";
 import { PageHeading } from "@/components/CampusContent/PageHeading";
+import { BackButton } from "@/components/CampusContent/BackButton";
 
 export function LegalPage({ kind }: { kind: "termos" | "privacidade" }) {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl">
+        <BackButton fallbackTo="/" />
         <PageHeading title={kind === "termos" ? "Termos de uso" : "Política de privacidade"} />
         <p className="text-sm leading-7 text-muted-foreground">
           O InfoCampus é um espaço de troca entre estudantes da comunidade acadêmica do IFMA.

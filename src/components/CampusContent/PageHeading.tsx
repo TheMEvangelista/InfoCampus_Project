@@ -1,16 +1,13 @@
 export function PageHeading({
   title,
-  subtitle,
-  className = "mb-7 border-b border-border pb-5",
+  className = "mb-5 border-b border-border pb-3",
 }: {
   title: string;
-  subtitle?: string | undefined;
   className?: string;
 }) {
   return (
     <div className={className}>
-      <h1 className="text-2xl font-extrabold text-foreground md:text-3xl">{title}</h1>
-      {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
+      <h1 className="text-2xl leading-9 font-extrabold text-foreground md:text-3xl">{title}</h1>
     </div>
   );
 }

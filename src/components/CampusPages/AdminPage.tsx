@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import { Empty, PageHeading, SectionHeading } from "@/components/CampusContent";
+import { BackButton, Empty, PageHeading, SectionHeading } from "@/components/CampusContent";
 import { content } from "@/lib/content";
 import { useAuth, useIsStaff } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +63,8 @@ export function AdminPage() {
   }
   return (
     <AppShell>
-      <PageHeading title="Painel admin" subtitle="Visão geral da comunidade." />
+      <BackButton fallbackTo="/" />
+      <PageHeading title="Painel admin" />
       {!user ? (
         <LoginPrompt />
       ) : isStaff ? (

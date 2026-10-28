@@ -78,7 +78,7 @@ export function EditProfilePage() {
 
   return <AppShell>
     <BackButton />
-    <PageHeading title="Editar perfil" subtitle="Atualize suas informações pessoais e acadêmicas." />
+    <PageHeading title="Editar perfil" />
     {!user ? <LoginPrompt /> : profile && <form key={profile.id} onSubmit={save} className="rounded-xl border border-border bg-card p-5 shadow-card sm:p-7">
       <section className="space-y-5">
         <div className="border-b border-dashed border-border pb-3"><h2 className="text-lg font-bold">Informações pessoais</h2></div>

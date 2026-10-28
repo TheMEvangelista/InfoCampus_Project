@@ -39,7 +39,7 @@ export function SettingsPage() {
 
   return <AppShell>
     <BackButton />
-    <PageHeading title="Configurações" subtitle="Segurança e gerenciamento da sua conta." />
+    <PageHeading title="Configurações" />
     {!user ? <LoginPrompt /> : <div className="rounded-xl border border-border bg-card p-4 shadow-card sm:p-6">
       <div className="mb-5 flex flex-wrap gap-2 border-b border-border pb-4">
         <Button type="button" variant={section === "security" ? "default" : "outline"} onClick={() => setSection("security")}>Segurança</Button>

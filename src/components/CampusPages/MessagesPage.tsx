@@ -217,7 +217,7 @@ export function MessagesPage() {
   return (
     <AppShell immersive>
       <div className="flex h-full min-h-0 flex-col px-1 md:px-0">
-        <div className="shrink-0 pt-1 md:pt-4">
+        <div className="shrink-0 pt-1 md:pt-5">
           <BackButton fallbackTo="/" />
           <div className="hidden md:block">
             <PageHeading title="Mensagens" className="mb-5 border-b border-border pb-3" />

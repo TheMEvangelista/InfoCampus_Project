@@ -76,7 +76,7 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
               size="icon"
               aria-label={(isDesktop ? !collapsed : mobileOpen) ? "Fechar menu" : "Abrir menu"}
               aria-expanded={isDesktop ? !collapsed : mobileOpen}
-              className="lg:ml-3.5 [&_svg]:size-6 hover:bg-muted hover:text-foreground"
+              className="hidden lg:inline-flex lg:ml-3.5 [&_svg]:size-6 hover:bg-muted hover:text-foreground"
               onClick={toggleSidebar}
             >
               {(isDesktop ? !collapsed : mobileOpen) ? (
@@ -240,7 +240,7 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
       <div
         className={cn(
           "mx-auto flex max-w-[1600px] gap-5 px-3",
-          immersive ? "h-[calc(100dvh-4.0625rem)] py-0" : "py-6 pb-24 lg:pb-6",
+          immersive ? "h-[calc(100dvh-4.0625rem)] py-0 pb-16 lg:pb-0" : "pt-4 pb-24 lg:pb-6",
         )}
       >
         <div
@@ -298,12 +298,12 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
 
       <nav aria-label="Navegação principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card px-2 pt-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
         {mobileNavItems.map(({ to, label, icon: Icon }) => {
-          const active = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+          const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
           return <Link key={to} to={to} className={`flex flex-col items-center gap-1 pb-1 text-[10px] ${active ? "font-semibold text-primary" : "text-muted-foreground"}`}><Icon className="h-5 w-5" /><span>{label}</span></Link>;
         })}
       </nav>
 
-      {!immersive && <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+      {!immersive && <footer className="border-t border-border px-3 pt-6 pb-24 text-center text-xs text-muted-foreground lg:px-0 lg:pb-6">
         InfoCampus · Comunidade acadêmica do IFMA ·{" "}
         <Link to="/termos" className="underline">
           Termos de uso

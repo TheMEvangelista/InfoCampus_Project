@@ -20,7 +20,9 @@ export function ArticlePage({ slug }: { slug: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
-        .select("id,slug,title,subtitle,content,cover_url,created_at,featured,tags,author_id,profiles!articles_author_id_fkey(id,username,full_name,avatar_url),categories(id,slug,name,description)")
+        .select(
+          "id,slug,title,subtitle,content,cover_url,created_at,featured,tags,author_id,profiles!articles_author_id_fkey(id,username,full_name,avatar_url),categories(id,slug,name,description)",
+        )
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;

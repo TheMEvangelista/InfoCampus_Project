@@ -2,6 +2,7 @@ import { useState, SubmitEvent } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PageHeading } from "@/components/CampusContent/PageHeading";
+import { BackButton } from "@/components/CampusContent/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
@@ -23,10 +24,8 @@ export function ResetPasswordPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-md">
-        <PageHeading
-          title="Recuperar senha"
-          subtitle="Enviaremos um link para o seu e-mail institucional."
-        />
+        <BackButton fallbackTo="/" />
+        <PageHeading title="Recuperar senha" />
         <form onSubmit={submit} className="space-y-4">
           <Label htmlFor="reset-email">E-mail institucional</Label>
           <Input

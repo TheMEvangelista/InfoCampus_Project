@@ -17,12 +17,12 @@ export function BackButton({
     <Button
       type="button"
       variant="ghost"
-      size="sm"
+      size="default"
       onClick={() => {
         if (router.history.canGoBack()) router.history.back();
         else void router.navigate({ to: fallbackTo });
       }}
-      className="mb-1 -ml-2 gap-2 text-muted-foreground hover:text-foreground"
+      className="h-10 rounded-full px-3 gap-2 text-muted-foreground hover:text-foreground"
     >
       <ArrowLeft className="h-4 w-4" /> {label}
     </Button>

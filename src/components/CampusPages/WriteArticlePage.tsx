@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PageHeading } from "@/components/CampusContent/PageHeading";
+import { BackButton } from "@/components/CampusContent/BackButton";
 import { content } from "@/lib/content";
 import { useAuth, useIsStaff, useProfile } from "@/lib/auth";
 import { isSafeHttpUrl } from "@/lib/url";
@@ -63,7 +64,8 @@ export function WriteArticlePage() {
   }
   return (
     <AppShell>
-      <PageHeading title="Escrever artigo" subtitle="Compartilhe conhecimento com a comunidade." />
+      <BackButton fallbackTo="/" />
+      <PageHeading title="Escrever artigo" />
       {!user ? (
         <LoginPrompt />
       ) : (
