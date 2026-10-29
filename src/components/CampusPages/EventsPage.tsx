@@ -92,7 +92,7 @@ export function EventsPage() {
         ref={pageScrollRef}
         className="h-full min-h-0 overflow-y-auto pb-20 scrollbar-none lg:pb-4"
       >
-        <div className="pt-4 lg:pt-5">
+        <div className="pt-4 lg:pt-4">
           <BackButton fallbackTo="/" />
           <PageHeading title="Eventos" />
         </div>
