@@ -47,7 +47,9 @@ export function EditProfilePage() {
     if (!user || !profile) return;
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") ?? "").trim();
+    const username = String(form.get("username") ?? "").trim().toLowerCase();
     if (!email) return toast.error("Informe seu e-mail.");
+    if (!/^[a-z0-9_.]{3,30}$/.test(username)) return toast.error("O nome de usuário deve ter de 3 a 30 caracteres: letras minúsculas, números, ponto ou sublinhado.");
     if (avatarUrl && !isSafeHttpUrl(avatarUrl)) return toast.error("O link da foto não é válido.");
     const links = Object.fromEntries(["curriculo", "instagram", "tiktok", "twitter"].map((key) => {
       const value = String(form.get(key) ?? "").trim();
@@ -60,13 +62,14 @@ export function EditProfilePage() {
     setSaveBusy(true);
     const { error } = await supabase.from("profiles").update({
       full_name: String(form.get("full_name") ?? "").trim(),
+      username,
       avatar_url: avatarUrl,
       course: String(form.get("course") ?? "").trim() || null,
       cohort: String(form.get("cohort") ?? "").trim() || null,
       bio: String(form.get("bio") ?? "").trim() || null,
       links,
     }).eq("id", user.id);
-    if (error) { setSaveBusy(false); return toast.error(error.message); }
+    if (error) { setSaveBusy(false); return toast.error(error.code === "23505" ? "Esse nome de usuário já está em uso." : error.message); }
     if (email !== (user.email ?? "")) {
       const { error: emailError } = await supabase.auth.updateUser({ email });
       if (emailError) { setSaveBusy(false); return toast.error("As informações foram salvas, mas não foi possível atualizar o e-mail.", { description: emailError.message }); }
@@ -91,6 +94,7 @@ export function EditProfilePage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div><Label htmlFor="full_name">Nome completo</Label><Input id="full_name" name="full_name" defaultValue={profile.full_name} maxLength={100} required /></div>
+          <div><Label htmlFor="username">Nome de usuário</Label><Input id="username" name="username" defaultValue={profile.username} minLength={3} maxLength={30} pattern="[a-z0-9_.]{3,30}" title="Use de 3 a 30 caracteres: letras minúsculas, números, ponto ou sublinhado." required /><p className="mt-1 text-xs text-muted-foreground">Use letras minúsculas, números, ponto ou sublinhado.</p></div>
           <div><Label htmlFor="email">E-mail</Label><Input id="email" name="email" type="email" defaultValue={user.email ?? ""} required /></div>
         </div>
       </section>

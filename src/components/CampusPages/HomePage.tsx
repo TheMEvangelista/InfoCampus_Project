@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Settings, Star, Users } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -21,6 +22,7 @@ import campusStudents from "@/assets/Images/Image-1.jpg";
 import campusOpportunity from "@/assets/Images/Image-2.jpg";
 import { Article } from "@/lib/content";
 import { safeUrl } from "@/lib/url";
+import { supabase } from "@/integrations/supabase/client";
 
 const featuredCarouselContentTypes = ["news", "opportunity", "event", "article"] as const;
 const favoriteCommunitiesStorageKey = "infocampus-favorite-communities";
@@ -28,6 +30,17 @@ const favoriteCommunitiesStorageKey = "infocampus-favorite-communities";
 export function HomePage() {
   const { articles, posts, events, communities, opportunities } = useCampusData();
   const { user } = useAuth();
+  const [communityFeedFilter, setCommunityFeedFilter] = useState<"all" | "friends" | "communities" | "opportunities">("all");
+  const [communityFeedSort, setCommunityFeedSort] = useState<"recent" | "oldest" | "popular">("recent");
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ["accepted-friends", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data, error } = await supabase.from("friend_requests").select("requester_id,recipient_id").eq("status", "accepted").or(`requester_id.eq.${user!.id},recipient_id.eq.${user!.id}`);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const featuredCarouselRef = useRef<HTMLDivElement>(null);
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [communityListOpen, setCommunityListOpen] = useState(true);
@@ -60,6 +73,19 @@ export function HomePage() {
   const otherCommunities = listedCommunities.filter(
     (community) => !community.community_members.some((member) => member.user_id === user?.id),
   );
+  const friendIds = new Set(friendRequests.map((request) => request.requester_id === user?.id ? request.recipient_id : request.requester_id));
+  const communityFeedPosts = (posts.data ?? [])
+    .filter((post) => {
+      if (communityFeedFilter === "friends") return friendIds.has(post.author_id);
+      if (communityFeedFilter === "communities") return joinedCommunities.some((community) => community.id === post.community_id);
+      if (communityFeedFilter === "opportunities") return /\b(vaga|vagas|oportunidade|oportunidades|estágio|estagio)\b/i.test(`${post.content} ${post.link_urls.join(" ")}`);
+      return true;
+    })
+    .sort((a, b) => communityFeedSort === "oldest"
+      ? a.created_at.localeCompare(b.created_at)
+      : communityFeedSort === "popular"
+        ? b.post_likes.length - a.post_likes.length || b.created_at.localeCompare(a.created_at)
+        : b.created_at.localeCompare(a.created_at));
 
   function toggleFavoriteCommunity(communityId: string) {
     const updated = favoriteCommunityIds.includes(communityId)
@@ -410,12 +436,29 @@ export function HomePage() {
           </div>
         </section>
         <section>
-          <SectionHeading title="Da comunidade" />
+          <div className="mb-5">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Da comunidade</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Acompanhe as atualizações dos seus amigos e das comunidades acadêmicas.</p>
+          </div>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filtrar publicações da comunidade">
+              {([ ["all", "Todos os posts"], ["friends", "Amigos & conexões"], ["communities", "Minhas comunidades"], ["opportunities", "Vagas & oportunidades"] ] as const).map(([value, label]) => (
+                <button key={value} type="button" role="tab" aria-selected={communityFeedFilter === value} onClick={() => setCommunityFeedFilter(value)} className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition-colors ${communityFeedFilter === value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:bg-muted"}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">Ordenar:
+              <select aria-label="Ordenar publicações" value={communityFeedSort} onChange={(event) => setCommunityFeedSort(event.target.value as typeof communityFeedSort)} className="rounded-md border border-border bg-card px-2 py-1.5 font-semibold text-foreground">
+                <option value="recent">Mais recentes</option><option value="oldest">Mais antigas</option><option value="popular">Mais curtidas</option>
+              </select>
+            </label>
+          </div>
           <div className="space-y-4">
-            {posts.data?.slice(0, 8).map((p) => (
+            {communityFeedPosts.slice(0, 8).map((p) => (
               <PostCard key={p.id} post={p} />
             ))}
-            {posts.data?.length === 0 && <Empty text="Seja a primeira pessoa a publicar." />}
+            {communityFeedPosts.length === 0 && <Empty text={communityFeedFilter === "friends" ? "Ainda não há publicações dos seus amigos." : communityFeedFilter === "communities" ? "Ainda não há publicações nas comunidades." : communityFeedFilter === "opportunities" ? "Nenhuma publicação sobre vagas ou oportunidades." : "Seja a primeira pessoa a publicar."} />}
           </div>
         </section>
       </div>

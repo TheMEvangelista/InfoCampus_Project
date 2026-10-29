@@ -3,7 +3,6 @@ import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { IFMA_SITE, INSTITUTIONAL_DOMAIN, isInstitutionalEmail } from "@/lib/auth";
-import { isSafeHttpUrl } from "@/lib/url";
 
 export function useHandleSignup(setLoading: Dispatch<SetStateAction<boolean>>) {
   const navigate = useNavigate();
@@ -15,10 +14,7 @@ export function useHandleSignup(setLoading: Dispatch<SetStateAction<boolean>>) {
       .toLowerCase();
     const password = String(form.get("password") ?? "");
     const fullName = String(form.get("full_name") ?? "").trim();
-    const username = String(form.get("username") ?? "")
-      .trim()
-      .toLowerCase();
-    const avatarUrl = String(form.get("avatar_url") ?? "").trim();
+    const confirmPassword = String(form.get("confirm_password") ?? "");
 
     if (!isInstitutionalEmail(email)) {
       toast.error("Cadastro somente para estudantes do IFMA", {
@@ -30,20 +26,15 @@ export function useHandleSignup(setLoading: Dispatch<SetStateAction<boolean>>) {
       return;
     }
     if (fullName.length < 3) return toast.error("Informe seu nome completo.");
-    if (username.length < 3) return toast.error("Escolha um nome de usuário com 3+ caracteres.");
     if (password.length < 8) return toast.error("A senha precisa ter ao menos 8 caracteres.");
-    if (avatarUrl && !isSafeHttpUrl(avatarUrl)) {
-      return toast.error("Link da foto inválido", {
-        description: "Use um endereço que comece com http:// ou https://.",
-      });
-    }
+    if (password !== confirmPassword) return toast.error("As senhas não coincidem.");
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName, username, avatar_url: avatarUrl || null },
+        data: { full_name: fullName },
       },
     });
     setLoading(false);

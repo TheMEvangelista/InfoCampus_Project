@@ -72,10 +72,6 @@ export function EntrarPage() {
                     <Input id="full_name" name="full_name" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="username">Nome de usuário</Label>
-                    <Input id="username" name="username" required placeholder="ana.souza" />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="signup-email">E-mail institucional</Label>
                     <Input
                       id="signup-email"
@@ -86,12 +82,12 @@ export function EntrarPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="avatar_url">Foto de perfil (link)</Label>
-                    <Input id="avatar_url" name="avatar_url" placeholder="https://..." />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="signup-password">Senha</Label>
                     <Input id="signup-password" name="password" type="password" minLength={8} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirmar senha</Label>
+                    <Input id="confirm-password" name="confirm_password" type="password" minLength={8} required />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Criando..." : "Criar conta"}

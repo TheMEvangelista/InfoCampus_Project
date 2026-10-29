@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 type Person = { id: string; username: string; full_name: string; avatar_url: string | null };
 const FAVORITES_LIMIT = 3;
+const EMPTY_PEOPLE: Person[] = [];
 
 export function MessagesPage() {
   const { user } = useAuth();
@@ -83,6 +84,39 @@ export function MessagesPage() {
       return (data ?? []) as Person[];
     },
   });
+  const {
+    data: friends = EMPTY_PEOPLE,
+    isLoading: friendsLoading,
+    isError: friendsError,
+  } = useQuery({
+    queryKey: ["message-friends", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data: requests, error: requestsError } = await supabase
+        .from("friend_requests")
+        .select("requester_id,recipient_id")
+        .eq("status", "accepted")
+        .or(`requester_id.eq.${user!.id},recipient_id.eq.${user!.id}`);
+      if (requestsError) throw requestsError;
+      const ids = [
+        ...new Set(
+          (requests ?? []).map((request) =>
+            request.requester_id === user!.id ? request.recipient_id : request.requester_id,
+          ),
+        ),
+      ];
+      if (!ids.length) return [] as Person[];
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id,username,full_name,avatar_url")
+        .in("id", ids);
+      if (error) throw error;
+      return ((data ?? []) as Person[]).sort((a, b) =>
+        a.full_name.localeCompare(b.full_name, "pt-BR") ||
+        a.username.localeCompare(b.username, "pt-BR"),
+      );
+    },
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -122,22 +156,48 @@ export function MessagesPage() {
         ),
     [conversations, favorites],
   );
-  const peopleById = new Map((people ?? []).map((person) => [person.id, person]));
-  const selected = activeId ?? sortedConversations[0]?.id ?? null;
-  const currentMessages = selected ? (conversations[selected] ?? []) : [];
-  const visibleConversations = sortedConversations.filter(({ id }) => {
-    const person = peopleById.get(id);
-    const term = search.trim().toLocaleLowerCase("pt-BR");
-    return (
-      !term ||
-      person?.full_name.toLocaleLowerCase("pt-BR").includes(term) ||
-      person?.username.toLocaleLowerCase("pt-BR").includes(term)
-    );
+  const peopleById = new Map([...(people ?? []), ...friends].map((person) => [person.id, person]));
+  const friendIds = new Set(friends.map((person) => person.id));
+  const lastMessagedFriendId = useMemo(() => {
+    const latestSentMessage = (messages ?? [])
+      .filter((message) => message.sender_id === user?.id)
+      .reduce<Message | null>(
+        (latest, message) =>
+          !latest || message.created_at > latest.created_at ? message : latest,
+        null,
+      );
+    return latestSentMessage && friends.some((friend) => friend.id === latestSentMessage.recipient_id)
+      ? latestSentMessage.recipient_id
+      : null;
+  }, [messages, user?.id, friends]);
+  const orderedFriends = useMemo(() => {
+    if (!lastMessagedFriendId) return friends;
+    const first = friends.find((friend) => friend.id === lastMessagedFriendId);
+    return first ? [first, ...friends.filter((friend) => friend.id !== first.id)] : friends;
+  }, [friends, lastMessagedFriendId]);
+  const friendConversations = orderedFriends.map((person) => {
+    const list = conversations[person.id] ?? [];
+    return { id: person.id, person, list, last: list[list.length - 1] };
   });
+  const otherConversations = sortedConversations
+    .filter(({ id }) => !friendIds.has(id))
+    .map(({ id, list, last }) => ({ id, person: peopleById.get(id), list, last }));
+  const term = search.trim().toLocaleLowerCase("pt-BR");
+  const matchesSearch = (person?: Person) =>
+    !term ||
+    Boolean(
+      person?.full_name.toLocaleLowerCase("pt-BR").includes(term) ||
+        person?.username.toLocaleLowerCase("pt-BR").includes(term),
+    );
+  const visibleFriends = friendConversations.filter(({ person }) => matchesSearch(person));
+  const visibleOtherConversations = otherConversations.filter(({ person }) => matchesSearch(person));
+  const visibleConversations = [...visibleFriends, ...visibleOtherConversations];
+  const selected = activeId ?? orderedFriends[0]?.id ?? sortedConversations[0]?.id ?? null;
+  const currentMessages = selected ? (conversations[selected] ?? []) : [];
 
   useEffect(() => {
-    if (!routeSearch.para || !people) return;
-    const requested = people.find(
+    if (!routeSearch.para) return;
+    const requested = [...(people ?? []), ...friends].find(
       (person) =>
         person.username.toLowerCase() === routeSearch.para!.replace(/^@/, "").toLowerCase(),
     );
@@ -145,7 +205,65 @@ export function MessagesPage() {
       setActiveId(requested.id);
       setMobileThreadOpen(true);
     }
-  }, [routeSearch.para, people]);
+  }, [routeSearch.para, people, friends]);
+
+  function renderConversation(contact: {
+    id: string;
+    person?: Person;
+    list: Message[];
+    last?: Message;
+  }) {
+    const { id, person, list, last } = contact;
+    const unread = list.some((message) => message.recipient_id === user?.id && !message.read);
+    return (
+      <div
+        key={id}
+        className={`group flex items-center gap-3 border-b border-border/70 px-4 py-3 ${selected === id ? "bg-primary/10" : "hover:bg-background/70"}`}
+      >
+        <button
+          onClick={() => {
+            setActiveId(id);
+            setMobileThreadOpen(true);
+          }}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <Avatar className="h-11 w-11 shrink-0">
+            <AvatarImage src={safeUrl(person?.avatar_url) ?? undefined} />
+            <AvatarFallback>{person?.full_name?.slice(0, 1) ?? "?"}</AvatarFallback>
+          </Avatar>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center justify-between gap-2">
+              <strong className="truncate text-sm">{person?.full_name ?? "Estudante"}</strong>
+              {last && (
+                <span className="shrink-0 text-[10px] text-muted-foreground">
+                  {new Date(last.created_at).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+            </span>
+            <span className="flex items-center justify-between gap-2">
+              <span className="truncate text-xs text-muted-foreground">
+                {last?.content ?? "Comece uma conversa"}
+              </span>
+              {unread && (
+                <i className="h-2 w-2 shrink-0 rounded-full bg-primary" aria-label="Mensagem não lida" />
+              )}
+            </span>
+          </span>
+        </button>
+        <button
+          onClick={() => toggleFavorite(id)}
+          aria-label={favorites.includes(id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          title={favorites.includes(id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          className="rounded-full p-1.5 text-muted-foreground hover:bg-background hover:text-primary"
+        >
+          <Star className={`h-4 w-4 ${favorites.includes(id) ? "fill-primary text-primary" : ""}`} />
+        </button>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!user || !selected) return;
@@ -248,18 +366,18 @@ export function MessagesPage() {
                 <Input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Buscar conversas"
-                  aria-label="Buscar conversas"
+                  placeholder="Buscar amigos e conversas"
+                  aria-label="Buscar amigos e conversas"
                   className="rounded-full bg-background"
                 />
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none">
                 <div className="px-4 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Conversas
+                  Amigos
                 </div>
-                {isLoading ? (
+                {isLoading || friendsLoading ? (
                   <p className="p-4 text-sm text-muted-foreground">Carregando conversas…</p>
-                ) : isError ? (
+                ) : isError || friendsError ? (
                   <p className="p-4 text-sm text-destructive">
                     Não foi possível carregar suas conversas.
                   </p>
@@ -268,73 +386,17 @@ export function MessagesPage() {
                     {search ? "Nenhuma conversa encontrada." : "Você ainda não tem conversas."}
                   </p>
                 ) : (
-                  visibleConversations.map(({ id, list, last }) => {
-                    const person = peopleById.get(id);
-                    const unread = list.some(
-                      (message) => message.recipient_id === user.id && !message.read,
-                    );
-                    return (
-                      <div
-                        key={id}
-                        className={`group flex items-center gap-3 border-b border-border/70 px-4 py-3 ${selected === id ? "bg-primary/10" : "hover:bg-background/70"}`}
-                      >
-                        <button
-                          onClick={() => {
-                            setActiveId(id);
-                            setMobileThreadOpen(true);
-                          }}
-                          className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                        >
-                          <Avatar className="h-11 w-11 shrink-0">
-                            <AvatarImage src={safeUrl(person?.avatar_url) ?? undefined} />
-                            <AvatarFallback>{person?.full_name?.slice(0, 1) ?? "?"}</AvatarFallback>
-                          </Avatar>
-                          <span className="min-w-0 flex-1">
-                            <span className="flex items-center justify-between gap-2">
-                              <strong className="truncate text-sm">
-                                {person?.full_name ?? "Estudante"}
-                              </strong>
-                              <span className="shrink-0 text-[10px] text-muted-foreground">
-                                {new Date(last.created_at).toLocaleTimeString("pt-BR", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                            </span>
-                            <span className="flex items-center justify-between gap-2">
-                              <span className="truncate text-xs text-muted-foreground">
-                                {last.content}
-                              </span>
-                              {unread && (
-                                <i
-                                  className="h-2 w-2 shrink-0 rounded-full bg-primary"
-                                  aria-label="Mensagem não lida"
-                                />
-                              )}
-                            </span>
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => toggleFavorite(id)}
-                          aria-label={
-                            favorites.includes(id)
-                              ? "Remover dos favoritos"
-                              : "Adicionar aos favoritos"
-                          }
-                          title={
-                            favorites.includes(id)
-                              ? "Remover dos favoritos"
-                              : "Adicionar aos favoritos"
-                          }
-                          className="rounded-full p-1.5 text-muted-foreground hover:bg-background hover:text-primary"
-                        >
-                          <Star
-                            className={`h-4 w-4 ${favorites.includes(id) ? "fill-primary text-primary" : ""}`}
-                          />
-                        </button>
-                      </div>
-                    );
-                  })
+                  <>
+                    {visibleFriends.map(renderConversation)}
+                    {visibleOtherConversations.length > 0 && (
+                      <>
+                        <div className="px-4 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Outras conversas
+                        </div>
+                        {visibleOtherConversations.map(renderConversation)}
+                      </>
+                    )}
+                  </>
                 )}
               </div>
             </aside>

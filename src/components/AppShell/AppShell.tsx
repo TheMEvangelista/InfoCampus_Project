@@ -168,7 +168,7 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
                         {profile?.full_name ?? "Estudante"}
                       </span>
                       <span className="block truncate text-xs font-normal text-muted-foreground">
-                        {user.email}
+                        @{profile?.username ?? "usuário"}
                       </span>
                     </span>
                   </DropdownMenuLabel>
