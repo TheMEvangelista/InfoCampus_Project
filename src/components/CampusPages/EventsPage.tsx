@@ -128,7 +128,7 @@ export function EventsPage() {
                       "[&>button]:relative [&>button]:after:absolute [&>button]:after:bottom-1 [&>button]:after:left-1/2 [&>button]:after:h-1 [&>button]:after:w-1 [&>button]:after:-translate-x-1/2 [&>button]:after:rounded-full [&>button]:after:bg-amber-500 [&>button]:after:content-['']",
                   }}
                   classNames={{ today: "" }}
-                  className="mx-auto w-full max-w-none bg-transparent p-0.5 [--cell-size:1.8rem] [--cell-height:1.51rem] xl:[--cell-size:2.5rem] xl:[--cell-height:2.1rem]"
+                  className="mx-auto w-full max-w-none bg-transparent p-0.5 [--cell-size:1.8rem] [--cell-height:2.2rem] xl:[--cell-size:2.5rem] xl:[--cell-height:2.1rem]"
                 />
                 <div className="mt-1.5 flex flex-wrap justify-between gap-x-2.5 gap-y-1 border-t border-border px-1 pt-1.5 text-[10px] text-muted-foreground sm:text-[11px]">
                   {(["holiday", "event", "deadline", "start"] as const).map((category) => (
