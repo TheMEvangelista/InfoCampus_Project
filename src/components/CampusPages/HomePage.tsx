@@ -74,8 +74,12 @@ export function HomePage() {
     (community) => !community.community_members.some((member) => member.user_id === user?.id),
   );
   const friendIds = new Set(friendRequests.map((request) => request.requester_id === user?.id ? request.recipient_id : request.requester_id));
+  const communityMemberIds = new Set(
+    joinedCommunities.flatMap((community) => community.community_members.map((member) => member.user_id)),
+  );
   const communityFeedPosts = (posts.data ?? [])
     .filter((post) => {
+      if (!friendIds.has(post.author_id) && !communityMemberIds.has(post.author_id)) return false;
       if (communityFeedFilter === "friends") return friendIds.has(post.author_id);
       if (communityFeedFilter === "communities") return joinedCommunities.some((community) => community.id === post.community_id);
       if (communityFeedFilter === "opportunities") return /\b(vaga|vagas|oportunidade|oportunidades|estágio|estagio)\b/i.test(`${post.content} ${post.link_urls.join(" ")}`);
