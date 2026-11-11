@@ -87,7 +87,7 @@ export function EventsPage() {
   }
 
   return (
-    <AppShell immersive>
+    <AppShell>
       <div
         ref={pageScrollRef}
         className="h-full min-h-0 overflow-y-auto pb-20 scrollbar-none lg:pb-4"

@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -125,13 +126,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isAuthPage = pathname.startsWith("/entrar") || pathname.startsWith("/cadastro") || pathname.startsWith("/registrar");
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
-        <FeedbackBanner />
+        {!isAuthPage && <FeedbackBanner />}
         <Toaster position="top-center" richColors />
       </AuthProvider>
     </QueryClientProvider>

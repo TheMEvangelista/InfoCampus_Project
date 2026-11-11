@@ -1,6 +1,20 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Bell, BriefcaseBusiness, CalendarDays, ChevronDown, Home, LogOut, Menu, Newspaper, Search, Settings, UserRound, Users, X } from "lucide-react";
+import {
+  Bell,
+  BriefcaseBusiness,
+  CalendarDays,
+  ChevronDown,
+  Home,
+  LogOut,
+  Menu,
+  Newspaper,
+  Search,
+  Settings,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useProfile } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +47,15 @@ const mobileNavItems = [
   { to: "/comunidades", label: "Rede", icon: Users },
 ] as const;
 
-export function AppShell({ children, aside, immersive = false }: { children: ReactNode; aside?: ReactNode; immersive?: boolean }) {
+export function AppShell({
+  children,
+  aside,
+  immersive = false,
+}: {
+  children: ReactNode;
+  aside?: ReactNode;
+  immersive?: boolean;
+}) {
   const [term, setTerm] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSidebarTop, setMobileSidebarTop] = useState(0);
@@ -67,8 +89,13 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
   }
 
   return (
-    <div className={immersive ? "h-dvh overflow-hidden bg-background" : "min-h-screen bg-background"}>
-      <header ref={headerRef} className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+    <div
+      className={immersive ? "h-dvh overflow-hidden bg-background" : "min-h-screen bg-background"}
+    >
+      <header
+        ref={headerRef}
+        className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur"
+      >
         <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr] items-center gap-3 px-3 py-3 md:grid-cols-[auto_1fr_auto]">
           <div className="flex min-w-0 items-center gap-2">
             <Button
@@ -291,28 +318,45 @@ export function AppShell({ children, aside, immersive = false }: { children: Rea
           </div>
         </div>
 
-        <main className={cn("min-w-0 flex-1", immersive && "h-full min-h-0")}>{children}</main>
+        <main className={cn("min-w-0 flex-1", immersive && "h-full min-h-0")}>
+          {!immersive && <div aria-hidden="true" className="h-18 sm:hidden" />}
+          {children}
+        </main>
 
         {aside && <aside className="hidden w-80 shrink-0 space-y-6 xl:block">{aside}</aside>}
       </div>
 
-      <nav aria-label="Navegação principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card px-2 pt-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <nav
+        aria-label="Navegação principal"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card px-2 pt-2 pb-[env(safe-area-inset-bottom)] lg:hidden"
+      >
         {mobileNavItems.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
-          return <Link key={to} to={to} className={`flex flex-col items-center gap-1 pb-1 text-[10px] ${active ? "font-semibold text-primary" : "text-muted-foreground"}`}><Icon className="h-5 w-5" /><span>{label}</span></Link>;
+          return (
+            <Link
+              key={to}
+              to={to}
+              className={`flex flex-col items-center gap-1 pb-1 text-[10px] ${active ? "font-semibold text-primary" : "text-muted-foreground"}`}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{label}</span>
+            </Link>
+          );
         })}
       </nav>
 
-      {!immersive && <footer className="border-t border-border px-3 pt-6 pb-24 text-center text-xs text-muted-foreground lg:px-0 lg:pb-6">
-        InfoCampus · Comunidade acadêmica do IFMA ·{" "}
-        <Link to="/termos" className="underline">
-          Termos de uso
-        </Link>{" "}
-        ·{" "}
-        <Link to="/privacidade" className="underline">
-          Política de privacidade
-        </Link>
-      </footer>}
+      {!immersive && (
+        <footer className="border-t border-border px-3 pt-6 pb-24 text-center text-xs text-muted-foreground lg:px-0 lg:pb-6">
+          InfoCampus · Comunidade acadêmica do IFMA ·{" "}
+          <Link to="/termos" className="underline">
+            Termos de uso
+          </Link>{" "}
+          ·{" "}
+          <Link to="/privacidade" className="underline">
+            Política de privacidade
+          </Link>
+        </footer>
+      )}
     </div>
   );
 }
